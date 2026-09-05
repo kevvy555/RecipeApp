@@ -1,0 +1,131 @@
+/* RecipeApp Shopping feature */
+.home-screen { grid-template-columns: repeat(4, 1fr); }
+.home-tile--shopping { background: linear-gradient(145deg, #4c1d95, #6d28d9 50%, #7c3aed); }
+
+.button:disabled { opacity: .45; cursor: not-allowed; }
+
+.shopping-heading { margin: 0; font-size: clamp(1.5rem, 3vw, 2.2rem); }
+.shopping-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.shopping-shop-card {
+  min-height: 170px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, #151e2f, #111827);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 10px 16px;
+  text-align: left;
+  align-items: center;
+}
+.shopping-shop-card:hover { border-color: #475569; background: #172033; }
+.shopping-shop-card__icon { grid-row: 1 / -1; font-size: 2.8rem; }
+.shopping-shop-card__name { font-size: clamp(1.25rem, 2.4vw, 1.8rem); font-weight: 850; }
+.shopping-shop-card__status { color: var(--muted); font-size: .88rem; }
+.shopping-shop-card__status--locked { color: #bbf7d0; font-weight: 750; }
+
+.shopping-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.shopping-list-header h2 { margin: 0 0 5px; }
+.shopping-list-header p:last-child { margin-bottom: 0; line-height: 1.45; }
+.shopping-actions { display: flex; gap: 10px; flex: 0 0 auto; }
+.shopping-action { min-width: 130px; }
+
+.shopping-item-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.shopping-item {
+  position: relative;
+  min-height: 92px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #111827;
+  color: var(--text);
+  padding: 14px 58px 14px 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 5px;
+  text-align: left;
+  transition: border-color .12s ease, background .12s ease, transform .08s ease;
+}
+.shopping-item:hover { border-color: #475569; background: #172033; }
+.shopping-item:active { transform: scale(.99); }
+.shopping-item--selected {
+  border-color: rgba(74, 222, 128, .7);
+  background: linear-gradient(145deg, rgba(22, 101, 52, .72), rgba(20, 83, 45, .82));
+}
+.shopping-item--selected:hover { background: rgba(22, 101, 52, .9); }
+.shopping-item--locked { min-height: 100px; }
+.shopping-item--collected {
+  border-color: #475569;
+  background: #1f2937;
+  opacity: .68;
+}
+.shopping-item--collected .shopping-item__name { text-decoration: line-through; text-decoration-thickness: 2px; }
+.shopping-item__name { font-weight: 850; font-size: 1rem; }
+.shopping-item__category { color: #cbd5e1; font-size: .76rem; }
+.shopping-item__quantity {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  min-width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 46, 22, .82);
+  border: 1px solid rgba(134, 239, 172, .45);
+  color: #dcfce7;
+  font-weight: 900;
+}
+.shopping-item--collected .shopping-item__quantity { right: 48px; background: #334155; border-color: #475569; }
+.shopping-item__check {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #475569;
+  color: #f8fafc;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .home-screen {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+  .shopping-list-header { align-items: stretch; flex-direction: column; }
+  .shopping-actions { width: 100%; }
+  .shopping-actions .button, .shopping-list-header > .shopping-action { flex: 1; width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .shopping-shop-grid { grid-template-columns: 1fr; }
+  .shopping-shop-card { min-height: 125px; padding: 18px; }
+  .shopping-item-grid { gap: 8px; }
+  .shopping-item { min-height: 84px; padding: 11px 48px 11px 12px; }
+  .shopping-item__quantity { right: 10px; min-width: 34px; height: 34px; }
+  .shopping-item--collected .shopping-item__quantity { right: 43px; }
+  .shopping-item__check { right: 10px; }
+}

@@ -1,10 +1,11 @@
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.1.0';
 export const DATA_SCHEMA_VERSION = 1;
 
 export const STORAGE_KEYS = Object.freeze({
   foods: 'recipeApp.foods.v1',
   recipes: 'recipeApp.recipes.v1',
-  planner: 'recipeApp.planner.v1'
+  planner: 'recipeApp.planner.v1',
+  shopping: 'recipeApp.shopping.v1'
 });
 
 export const FOOD_CATEGORIES = Object.freeze([

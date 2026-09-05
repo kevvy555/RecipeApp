@@ -1,4 +1,4 @@
-const VALID_ROUTES = new Set(['home', 'foods', 'recipes', 'planner']);
+const VALID_ROUTES = new Set(['home', 'foods', 'recipes', 'planner', 'shopping']);
 
 export function getRoute() {
   const route = location.hash.replace(/^#\/?/, '').split('?')[0] || 'home';

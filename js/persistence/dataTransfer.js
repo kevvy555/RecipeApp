@@ -9,7 +9,8 @@ export function buildExportPayload(state) {
     data: {
       foods: state.foods,
       recipes: state.recipes,
-      planner: state.planner
+      planner: state.planner,
+      shopping: state.shopping
     }
   };
 }
@@ -22,12 +23,17 @@ export function validateImportPayload(payload) {
   if (!Array.isArray(payload.data?.foods)) throw new Error('Import is missing a valid foods array.');
   if (!Array.isArray(payload.data?.recipes)) throw new Error('Import is missing a valid recipes array.');
   if (!payload.data?.planner || typeof payload.data.planner !== 'object') throw new Error('Import is missing valid planner data.');
+  if (payload.data?.shopping != null && !Array.isArray(payload.data.shopping?.shops)) {
+    throw new Error('Import contains invalid shopping data.');
+  }
 
-  return {
+  const state = {
     foods: payload.data.foods,
     recipes: payload.data.recipes,
     planner: payload.data.planner
   };
+  if (payload.data.shopping != null) state.shopping = payload.data.shopping;
+  return state;
 }
 
 export async function readImportFile(file) {

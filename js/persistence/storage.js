@@ -50,11 +50,20 @@ export class LocalDataStore {
     this.write(STORAGE_KEYS.planner, planner);
   }
 
+  getShopping() {
+    return this.read(STORAGE_KEYS.shopping, { shops: [] });
+  }
+
+  setShopping(shopping) {
+    this.write(STORAGE_KEYS.shopping, shopping);
+  }
+
   loadState() {
     return {
       foods: this.getFoods(),
       recipes: this.getRecipes(),
-      planner: this.getPlanner()
+      planner: this.getPlanner(),
+      shopping: this.getShopping()
     };
   }
 
@@ -62,5 +71,6 @@ export class LocalDataStore {
     this.setFoods(state.foods);
     this.setRecipes(state.recipes);
     this.setPlanner(state.planner);
+    if (state.shopping) this.setShopping(state.shopping);
   }
 }

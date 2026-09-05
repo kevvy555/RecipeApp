@@ -1,27 +1,41 @@
 import { LocalDataStore } from './persistence/storage.js';
 import { ensureSeedFoods } from './data/seedLoader.js';
+import { ensureSeedShopping } from './data/shoppingSeedLoader.js';
 import { downloadExport, readImportFile } from './persistence/dataTransfer.js';
 import { addDays, startOfWeekMonday, toIsoDate } from './core/utils.js';
 import { removeRecipeFromPlanner, setMeal } from './domain/plannerService.js';
+import {
+  clearShoppingSelection,
+  completeShoppingShop,
+  incrementShoppingItem,
+  lockShoppingItems,
+  toggleCollectedItem
+} from './domain/shoppingService.js';
 import { getRoute, navigate } from './ui/router.js';
 import { renderHomeView } from './ui/homeView.js';
 import { FoodsView } from './ui/foodsView.js';
 import { RecipesView } from './ui/recipesView.js';
 import { PlannerView } from './ui/plannerView.js';
+import { ShoppingView } from './ui/shoppingView.js';
 
 class RecipeApp {
   constructor(root) {
     this.root = root;
     this.store = new LocalDataStore();
-    this.state = { foods: [], recipes: [], planner: { weeks: {} } };
+    this.state = { foods: [], recipes: [], planner: { weeks: {} }, shopping: { shops: [] } };
     this.plannerWeekStart = toIsoDate(startOfWeekMonday());
+    this.shoppingShopId = null;
   }
 
   async start() {
     try {
       await ensureSeedFoods(this.store);
+      await ensureSeedShopping(this.store);
       this.state = this.store.loadState();
-      window.addEventListener('hashchange', () => this.render());
+      window.addEventListener('hashchange', () => {
+        if (getRoute() !== 'shopping') this.shoppingShopId = null;
+        this.render();
+      });
       this.root.addEventListener('click', event => {
         const routeButton = event.target.closest('[data-route]');
         if (routeButton) navigate(routeButton.dataset.route);
@@ -32,7 +46,7 @@ class RecipeApp {
       this.render();
     } catch (error) {
       console.error(error);
-      this.root.innerHTML = `<section class="fatal-error"><h1>Recipe App could not start</h1><p>${error.message}</p><p>Run the app through a local web server or GitHub Pages so the seed JSON file can load.</p></section>`;
+      this.root.innerHTML = `<section class="fatal-error"><h1>Recipe App could not start</h1><p>${error.message}</p><p>Run the app through a local web server or GitHub Pages so the seed JSON files can load.</p></section>`;
     }
   }
 
@@ -40,6 +54,7 @@ class RecipeApp {
     return {
       state: this.state,
       plannerWeekStart: this.plannerWeekStart,
+      shoppingShopId: this.shoppingShopId,
       actions: {
         saveFood: food => this.saveFood(food),
         deleteFood: id => this.deleteFood(id),
@@ -47,7 +62,14 @@ class RecipeApp {
         deleteRecipe: id => this.deleteRecipe(id),
         changePlannerWeek: days => this.changePlannerWeek(days),
         resetPlannerWeek: () => this.resetPlannerWeek(),
-        savePlannerMeal: (dayIndex, mealKey, meal) => this.savePlannerMeal(dayIndex, mealKey, meal)
+        savePlannerMeal: (dayIndex, mealKey, meal) => this.savePlannerMeal(dayIndex, mealKey, meal),
+        openShoppingShop: shopId => this.openShoppingShop(shopId),
+        closeShoppingShop: () => this.closeShoppingShop(),
+        incrementShoppingItem: (shopId, itemId) => this.incrementShoppingItem(shopId, itemId),
+        clearShoppingSelection: shopId => this.clearShoppingSelection(shopId),
+        lockShoppingItems: shopId => this.lockShoppingItems(shopId),
+        toggleCollectedShoppingItem: (shopId, itemId) => this.toggleCollectedShoppingItem(shopId, itemId),
+        completeShoppingShop: shopId => this.completeShoppingShop(shopId)
       }
     };
   }
@@ -61,6 +83,7 @@ class RecipeApp {
     if (route === 'foods') new FoodsView(this.root, this.context).render();
     if (route === 'recipes') new RecipesView(this.root, this.context).render();
     if (route === 'planner') new PlannerView(this.root, this.context).render();
+    if (route === 'shopping') new ShoppingView(this.root, this.context).render();
   }
 
   saveFood(food) {
@@ -109,6 +132,45 @@ class RecipeApp {
     this.render();
   }
 
+  saveShoppingState(nextState) {
+    this.state.shopping = nextState;
+    this.store.setShopping(this.state.shopping);
+    this.render();
+  }
+
+  openShoppingShop(shopId) {
+    this.shoppingShopId = shopId;
+    this.render();
+  }
+
+  closeShoppingShop() {
+    this.shoppingShopId = null;
+    this.render();
+  }
+
+  incrementShoppingItem(shopId, itemId) {
+    this.saveShoppingState(incrementShoppingItem(this.state.shopping, shopId, itemId));
+  }
+
+  clearShoppingSelection(shopId) {
+    this.saveShoppingState(clearShoppingSelection(this.state.shopping, shopId));
+  }
+
+  lockShoppingItems(shopId) {
+    this.saveShoppingState(lockShoppingItems(this.state.shopping, shopId));
+  }
+
+  toggleCollectedShoppingItem(shopId, itemId) {
+    this.saveShoppingState(toggleCollectedItem(this.state.shopping, shopId, itemId));
+  }
+
+  completeShoppingShop(shopId) {
+    this.state.shopping = completeShoppingShop(this.state.shopping, shopId);
+    this.store.setShopping(this.state.shopping);
+    this.shoppingShopId = null;
+    this.render();
+  }
+
   importData() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -117,9 +179,11 @@ class RecipeApp {
       if (!input.files?.[0]) return;
       try {
         const importedState = await readImportFile(input.files[0]);
-        if (!confirm('Importing will replace all foods, recipes and planner data currently stored on this device. Continue?')) return;
+        if (!confirm('Importing will replace the foods, recipes, planner and any shopping data contained in this backup. Continue?')) return;
         this.store.replaceState(importedState);
+        await ensureSeedShopping(this.store);
         this.state = this.store.loadState();
+        this.shoppingShopId = null;
         this.render();
         alert('RecipeApp data imported successfully.');
       } catch (error) {

@@ -16,5 +16,10 @@ export function renderHomeView() {
         <span class="home-tile__title">Planner</span>
         <span class="home-tile__caption">Plan the week</span>
       </button>
+      <button class="home-tile home-tile--shopping" type="button" data-route="shopping">
+        <span class="home-tile__icon" aria-hidden="true">🛒</span>
+        <span class="home-tile__title">Shopping</span>
+        <span class="home-tile__caption">Build shop lists</span>
+      </button>
     </section>`;
 }

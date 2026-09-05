@@ -8,6 +8,12 @@ test('export payload round-trips through import validation', () => {
   assert.deepEqual(validateImportPayload(payload), state);
 });
 
+test('shopping data round-trips when present', () => {
+  const state = { foods: [], recipes: [], planner: { weeks: {} }, shopping: { shops: [{ id: 'shop' }] } };
+  const payload = buildExportPayload(state);
+  assert.deepEqual(validateImportPayload(payload), state);
+});
+
 test('import rejects non RecipeApp files', () => {
   assert.throws(() => validateImportPayload({ app: 'OtherApp' }), /not a RecipeApp export/);
 });
