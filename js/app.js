@@ -4,7 +4,7 @@ import { downloadExport, readImportFile } from './persistence/dataTransfer.js';
 import { addDays, startOfWeekMonday, toIsoDate } from './core/utils.js';
 import { associateItemWithShop, migrateLegacyState, normalizeItem, setItemShopAvailability } from './domain/catalogService.js';
 import { removeRecipeFromPlanner, setMeal } from './domain/plannerService.js';
-import { addRecipeToShopping, clearShoppingSelection, completeShoppingShop, incrementShoppingItem, lockShoppingItems, removeShoppingItem, toggleCollectedItem } from './domain/shoppingService.js';
+import { addRecipeToShopping, clearShoppingSelection, completeShoppingShop, incrementShoppingItem, lockShoppingItems, removeShoppingItem, toggleCollectedItem, unlockShoppingItems } from './domain/shoppingService.js';
 import { getRoute, navigate } from './ui/router.js';
 import { renderHomeView } from './ui/homeView.js';
 import { FoodsView } from './ui/foodsView.js';
@@ -64,6 +64,7 @@ class RecipeApp {
         removeShoppingItem: (shopId, itemId) => this.removeShoppingItem(shopId, itemId),
         clearShoppingSelection: shopId => this.clearShoppingSelection(shopId),
         lockShoppingItems: shopId => this.lockShoppingItems(shopId),
+        unlockShoppingItems: shopId => this.unlockShoppingItems(shopId),
         toggleCollectedShoppingItem: (shopId, itemId) => this.toggleCollectedShoppingItem(shopId, itemId),
         completeShoppingShop: shopId => this.completeShoppingShop(shopId),
         addCatalogItemToShop: (shopId, itemId) => this.addCatalogItemToShop(shopId, itemId),
@@ -136,6 +137,7 @@ class RecipeApp {
   removeShoppingItem(shopId, itemId) { this.saveShoppingState(removeShoppingItem(this.state.shopping, shopId, itemId)); }
   clearShoppingSelection(shopId) { this.saveShoppingState(clearShoppingSelection(this.state.shopping, shopId)); }
   lockShoppingItems(shopId) { this.saveShoppingState(lockShoppingItems(this.state.shopping, shopId)); }
+  unlockShoppingItems(shopId) { this.saveShoppingState(unlockShoppingItems(this.state.shopping, shopId)); }
   toggleCollectedShoppingItem(shopId, itemId) { this.saveShoppingState(toggleCollectedItem(this.state.shopping, shopId, itemId)); }
   completeShoppingShop(shopId) { this.state.shopping = completeShoppingShop(this.state.shopping, shopId); this.store.setShopping(this.state.shopping); this.shoppingShopId = null; this.render(); }
 

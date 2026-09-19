@@ -3,6 +3,7 @@ import { caloriesForWeight, escapeHtml, sortByName, uid } from '../core/utils.js
 import { associateItemWithShop } from '../domain/catalogService.js';
 import { sectionLayout } from './layout.js';
 import { openDialog } from './dialog.js';
+import { openItemPicker } from './itemPicker.js';
 
 function categoryOptions(categories) {
   return categories.map(category => `<option value="${escapeHtml(category)}">`).join('');
@@ -16,36 +17,43 @@ export class FoodsView {
     const shops = this.context.state.shopping?.shops || [];
     const shopMap = new Map(shops.map(shop => [shop.id, shop.name]));
     const categories = [...new Set([...GROCERY_CATEGORIES, ...items.map(item => item.category).filter(Boolean)])].sort();
-    const rows = items.map(item => `
-      <tr data-grocery-row data-name="${escapeHtml(item.name.toLowerCase())}" data-category="${escapeHtml(item.category)}" data-type="${item.isFood ? 'food' : 'non-food'}">
+    const rows = items.map(item => {
+      const preferredShop = shopMap.get(item.preferredShopId) || 'Unknown';
+      const searchText = `${item.name} ${item.category || ''} ${item.notes || ''} ${preferredShop}`.toLowerCase();
+      return `<tr data-grocery-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(item.category)}" data-type="${item.isFood ? 'food' : 'non-food'}" data-shop="${escapeHtml(item.preferredShopId || '')}">
         <td><strong>${escapeHtml(item.name)}</strong>${item.notes ? `<div class="muted small">${escapeHtml(item.notes)}</div>` : ''}</td>
         <td><span class="badge ${item.isFood ? 'badge--accent' : 'badge--quiet'}">${item.isFood ? 'Food' : 'Non-food'}</span></td>
         <td><span class="badge">${escapeHtml(item.category)}</span></td>
         <td class="number">${item.isFood && item.caloriesPer100g != null ? item.caloriesPer100g : '—'}</td>
-        <td>${escapeHtml(shopMap.get(item.preferredShopId) || 'Unknown')}</td>
+        <td>${escapeHtml(preferredShop)}</td>
         <td><span class="badge ${item.source === 'seed' ? 'badge--quiet' : 'badge--accent'}">${item.source === 'seed' ? 'Seed' : 'Added'}</span></td>
         <td class="table-actions"><button class="button button--small button--ghost" type="button" data-edit-grocery="${item.id}">Edit</button><button class="button button--small button--danger-ghost" type="button" data-delete-grocery="${item.id}">Delete</button></td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
 
     const calculatorFoods = items.filter(item => item.isFood && item.caloriesPer100g != null);
+    const firstCalculatorFood = calculatorFoods[0];
     const content = `<div class="stack stack--lg">
       <section class="card calorie-calculator">
         <div><p class="eyebrow">Food calculator</p><h2>Calories for a weight</h2></div>
-        <label>Food<select id="calculator-food" ${calculatorFoods.length ? '' : 'disabled'}>${calculatorFoods.map(item => `<option value="${item.id}">${escapeHtml(item.name)} · ${item.caloriesPer100g} kcal/100g</option>`).join('')}</select></label>
-        <label>Weight (g)<input id="calculator-weight" type="number" min="0" step="1" value="100" inputmode="decimal" ${calculatorFoods.length ? '' : 'disabled'}></label>
-        <div class="metric"><span id="calculator-result">${calculatorFoods.length ? '0' : '—'}</span><small>kcal</small></div>
+        <label>Food<button id="calculator-food-picker" class="button button--ghost item-picker-trigger" type="button" data-item-id="${escapeHtml(firstCalculatorFood?.id || '')}" ${firstCalculatorFood ? '' : 'disabled'}><span data-calculator-food-name>${escapeHtml(firstCalculatorFood?.name || 'No foods with calorie data')}</span><span aria-hidden="true">⌄</span></button></label>
+        <label>Weight (g)<input id="calculator-weight" type="number" min="0" step="1" value="100" inputmode="decimal" ${firstCalculatorFood ? '' : 'disabled'}></label>
+        <div class="metric"><span id="calculator-result">${firstCalculatorFood ? '0' : '—'}</span><small>kcal</small></div>
       </section>
       <section class="card">
         <div class="toolbar">
-          <div class="toolbar__group toolbar__group--grow">
+          <div class="toolbar__group toolbar__group--grow grocery-filter-group">
             <input id="grocery-search" type="search" placeholder="Search groceries…" aria-label="Search groceries">
             <select id="grocery-category-filter" aria-label="Filter by category"><option value="">All categories</option>${categories.map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}</select>
             <select id="grocery-type-filter" aria-label="Filter by item type"><option value="">All types</option><option value="food">Food</option><option value="non-food">Non-food</option></select>
+            <select id="grocery-shop-filter" aria-label="Filter by preferred shop"><option value="">All shops</option>${shops.map(shop => `<option value="${escapeHtml(shop.id)}">${escapeHtml(shop.name)}</option>`).join('')}</select>
           </div>
           <button id="add-grocery" class="button button--primary" type="button">+ Add item</button>
         </div>
+        <p class="muted small" data-grocery-filter-count></p>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Item</th><th>Type</th><th>Category</th><th class="number">kcal / 100g</th><th>Preferred shop</th><th>Source</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
-        <p class="help-text">Groceries is the master catalogue for everything you buy. New items are created here only. Food items can have calorie data and be used in recipes; non-food items have no calorie data. Every item has a preferred shop.</p>
+        <p class="muted" data-grocery-filter-empty hidden>No groceries match those filters.</p>
+        <p class="help-text">Search uses a live partial match, so the list shortens as you type. New items are created here only.</p>
       </section>
     </div>`;
 
@@ -57,32 +65,52 @@ export class FoodsView {
     const search = this.root.querySelector('#grocery-search');
     const category = this.root.querySelector('#grocery-category-filter');
     const type = this.root.querySelector('#grocery-type-filter');
+    const shop = this.root.querySelector('#grocery-shop-filter');
     const filter = () => {
       const query = search.value.trim().toLowerCase();
       const selectedCategory = category.value;
       const selectedType = type.value;
+      const selectedShop = shop.value;
+      let visible = 0;
       this.root.querySelectorAll('[data-grocery-row]').forEach(row => {
-        row.hidden = !row.dataset.name.includes(query)
-          || (selectedCategory && row.dataset.category !== selectedCategory)
-          || (selectedType && row.dataset.type !== selectedType);
+        const matches = row.dataset.search.includes(query)
+          && (!selectedCategory || row.dataset.category === selectedCategory)
+          && (!selectedType || row.dataset.type === selectedType)
+          && (!selectedShop || row.dataset.shop === selectedShop);
+        row.hidden = !matches;
+        if (matches) visible += 1;
       });
+      this.root.querySelector('[data-grocery-filter-count]').textContent = `${visible} of ${this.context.state.items.length} shown`;
+      this.root.querySelector('[data-grocery-filter-empty]').hidden = visible > 0;
     };
     search.addEventListener('input', filter);
     category.addEventListener('change', filter);
     type.addEventListener('change', filter);
+    shop.addEventListener('change', filter);
+    filter();
 
-    const calculatorFood = this.root.querySelector('#calculator-food');
-    const calculatorWeight = this.root.querySelector('#calculator-weight');
-    const calculatorResult = this.root.querySelector('#calculator-result');
-    if (calculatorFoods.length) {
-      const update = () => {
-        const item = this.context.state.items.find(entry => entry.id === calculatorFood.value);
-        calculatorResult.textContent = item ? Math.round(caloriesForWeight(item.caloriesPer100g, calculatorWeight.value)) : '0';
-      };
-      calculatorFood.addEventListener('change', update);
-      calculatorWeight.addEventListener('input', update);
-      update();
-    }
+    const picker = this.root.querySelector('#calculator-food-picker');
+    const weight = this.root.querySelector('#calculator-weight');
+    const result = this.root.querySelector('#calculator-result');
+    const updateCalculator = () => {
+      const item = this.context.state.items.find(entry => entry.id === picker.dataset.itemId);
+      result.textContent = item ? Math.round(caloriesForWeight(item.caloriesPer100g, weight.value)) : '—';
+    };
+    picker?.addEventListener('click', () => openItemPicker({
+      items: calculatorFoods,
+      shops: this.context.state.shopping.shops,
+      title: 'Choose calculator food',
+      eyebrow: 'Calories by weight',
+      selectedId: picker.dataset.itemId,
+      showType: false,
+      onSelect: item => {
+        picker.dataset.itemId = item.id;
+        picker.querySelector('[data-calculator-food-name]').textContent = item.name;
+        updateCalculator();
+      }
+    }));
+    weight?.addEventListener('input', updateCalculator);
+    if (calculatorFoods.length) updateCalculator();
 
     this.root.querySelector('#add-grocery').addEventListener('click', () => this.openItemEditor());
     this.root.querySelectorAll('[data-edit-grocery]').forEach(button => button.addEventListener('click', () => this.openItemEditor(this.context.state.items.find(item => item.id === button.dataset.editGrocery))));

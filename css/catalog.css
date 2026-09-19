@@ -33,3 +33,35 @@
 @media (max-width: 640px) {
   .catalog-picker-row { align-items: flex-start; flex-direction: column; }
 }
+
+.catalog-picker-filters,
+.manage-item-controls,
+.list-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(3, minmax(130px, .7fr));
+  gap: 10px;
+  align-items: center;
+}
+.list-filter-bar { grid-template-columns: minmax(180px, 1.5fr) minmax(150px, .8fr) minmax(140px, .7fr) auto; }
+.manage-item-controls { padding: 16px 18px 0; grid-template-columns: minmax(180px, 1.4fr) minmax(150px, .8fr) minmax(150px, .8fr); }
+.catalog-picker-row--selected { border-color: rgba(74,222,128,.75); background: rgba(22,101,52,.28); }
+.catalog-picker-empty, .manage-item-empty { margin: 0; padding: 0 18px 16px; }
+.item-picker-trigger {
+  width: 100%;
+  min-height: 42px;
+  justify-content: space-between;
+  text-align: left;
+  font-weight: 700;
+}
+.ingredient-picker-trigger { max-width: none; }
+.grocery-filter-group { flex-wrap: wrap; }
+@media (max-width: 800px) {
+  .catalog-picker-filters,
+  .manage-item-controls,
+  .list-filter-bar { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 520px) {
+  .catalog-picker-filters,
+  .manage-item-controls,
+  .list-filter-bar { grid-template-columns: 1fr; }
+}

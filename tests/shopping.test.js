@@ -9,7 +9,8 @@ import {
   rankedShopItems,
   removeShoppingItem,
   selectedShopItems,
-  toggleCollectedItem
+  toggleCollectedItem,
+  unlockShoppingItems
 } from '../js/domain/shoppingService.js';
 
 const items = [
@@ -79,4 +80,25 @@ test('selected item can be removed before locking without changing frequency', (
   state = lockShoppingItems(state, 'shop');
   state = removeShoppingItem(state, 'shop', 'bread');
   assert.equal(state.shops[0].current.quantities.bread, 1, 'locked lists cannot remove items');
+});
+
+test('locked list can be unlocked for editing without losing its selections', () => {
+  let state = blank();
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = lockShoppingItems(state, 'shop');
+  state = toggleCollectedItem(state, 'shop', 'milk');
+  state = unlockShoppingItems(state, 'shop');
+
+  assert.equal(state.shops[0].current.locked, false);
+  assert.equal(state.shops[0].current.quantities.milk, 1);
+  assert.equal(state.shops[0].current.collected.milk, true);
+
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = incrementShoppingItem(state, 'shop', 'bread');
+  assert.equal(state.shops[0].current.quantities.milk, 2);
+  assert.equal(state.shops[0].current.quantities.bread, 1);
+  assert.equal(state.shops[0].current.collected.milk, undefined, 'editing a collected item makes it uncollected');
+
+  state = lockShoppingItems(state, 'shop');
+  assert.equal(state.shops[0].current.locked, true);
 });
