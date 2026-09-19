@@ -1,0 +1,12 @@
+/* Shared catalogue / shopping integration */
+.shopping-actions--wrap { flex-wrap: wrap; justify-content: flex-end; }
+.manage-item-list { display: grid; gap: 8px; padding: 16px 18px; }
+.manage-item-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #0f172a; }
+.recipe-card__actions { flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .shopping-actions--wrap { display: grid; grid-template-columns: 1fr 1fr; }
+  .shopping-actions--wrap .button { width: 100%; }
+  .manage-item-row { grid-template-columns: 1fr auto; }
+  .manage-item-row .button { grid-column: 1 / -1; width: 100%; }
+  .data-table th:nth-child(5), .data-table td:nth-child(5) { display: none; }
+}

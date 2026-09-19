@@ -4,77 +4,14 @@ import { calculatePlannerCalories, getWeekPlan } from '../domain/plannerService.
 import { sectionLayout } from './layout.js';
 
 export class PlannerView {
-  constructor(root, context) {
-    this.root = root;
-    this.context = context;
-  }
-
+  constructor(root, context) { this.root = root; this.context = context; }
   render() {
-    const weekStart = this.context.plannerWeekStart;
-    const weekPlan = getWeekPlan(this.context.state.planner, weekStart);
-    const recipeOptions = [...this.context.state.recipes].sort((a, b) => a.name.localeCompare(b.name));
-    const totals = calculatePlannerCalories(weekPlan, this.context.state.recipes, this.context.state.foods);
-    const startDate = new Date(`${weekStart}T00:00:00`);
-
-    const mealCell = (dayIndex, mealType) => {
-      const meal = weekPlan[String(dayIndex)]?.[mealType.key] || null;
-      const selection = meal?.type === 'recipe' ? `recipe:${meal.recipeId}` : meal?.type === 'custom' ? 'custom' : '';
-      return `<div class="meal-slot" data-meal-slot data-day="${dayIndex}" data-meal="${mealType.key}">
-        <div class="meal-slot__label">${mealType.label}</div>
-        <select data-meal-select aria-label="${DAYS[dayIndex]} ${mealType.label}">
-          <option value="" ${selection === '' ? 'selected' : ''}>— Not planned —</option>
-          ${recipeOptions.map(recipe => `<option value="recipe:${recipe.id}" ${selection === `recipe:${recipe.id}` ? 'selected' : ''}>${escapeHtml(recipe.name)}</option>`).join('')}
-          <option value="custom" ${selection === 'custom' ? 'selected' : ''}>Other / custom meal…</option>
-        </select>
-        <input data-custom-meal type="text" maxlength="120" placeholder="Meal name" value="${escapeHtml(meal?.type === 'custom' ? meal.name : '')}" ${selection === 'custom' ? '' : 'hidden'}>
-      </div>`;
-    };
-
-    const days = DAYS.map((day, index) => `<article class="day-card">
-      <header class="day-card__header"><div><h3>${day}</h3><span>${formatShortDate(addDays(startDate, index))}</span></div><div class="day-calories"><strong>${totals.daily[index]}</strong><small>kcal planned</small></div></header>
-      <div class="stack">${MEAL_TYPES.map(meal => mealCell(index, meal)).join('')}</div>
-    </article>`).join('');
-
-    const content = `<div class="stack stack--lg">
-      <section class="card planner-toolbar">
-        <button class="button button--ghost" type="button" data-week-change="-7">← Previous</button>
-        <div class="planner-toolbar__title"><p class="eyebrow">Week of</p><h2>${escapeHtml(formatWeekRange(weekStart))}</h2><button class="text-button" type="button" data-week-current>This week</button></div>
-        <button class="button button--ghost" type="button" data-week-change="7">Next →</button>
-        <div class="metric metric--compact"><span>${totals.weekly}</span><small>planned kcal / week</small></div>
-      </section>
-      ${recipeOptions.length ? '' : '<div class="notice">You have no saved recipes yet. Planner slots still support custom meal names.</div>'}
-      <section class="planner-grid">${days}</section>
-    </div>`;
-
-    this.root.innerHTML = sectionLayout('Planner', content, { subtitle: 'Breakfast · Lunch · Dinner' });
-    this.bind();
+    const weekStart=this.context.plannerWeekStart; const weekPlan=getWeekPlan(this.context.state.planner,weekStart); const recipeOptions=[...this.context.state.recipes].sort((a,b)=>a.name.localeCompare(b.name)); const totals=calculatePlannerCalories(weekPlan,this.context.state.recipes,this.context.state.items); const startDate=new Date(`${weekStart}T00:00:00`);
+    const mealCell=(dayIndex,mealType)=>{const meal=weekPlan[String(dayIndex)]?.[mealType.key]||null;const selection=meal?.type==='recipe'?`recipe:${meal.recipeId}`:meal?.type==='custom'?'custom':'';return `<div class="meal-slot" data-meal-slot data-day="${dayIndex}" data-meal="${mealType.key}"><div class="meal-slot__label">${mealType.label}</div><select data-meal-select aria-label="${DAYS[dayIndex]} ${mealType.label}"><option value="" ${selection===''?'selected':''}>— Not planned —</option>${recipeOptions.map(recipe=>`<option value="recipe:${recipe.id}" ${selection===`recipe:${recipe.id}`?'selected':''}>${escapeHtml(recipe.name)}</option>`).join('')}<option value="custom" ${selection==='custom'?'selected':''}>Other / custom meal…</option></select><input data-custom-meal type="text" maxlength="120" placeholder="Meal name" value="${escapeHtml(meal?.type==='custom'?meal.name:'')}" ${selection==='custom'?'':'hidden'}></div>`;};
+    const days=DAYS.map((day,index)=>`<article class="day-card"><header class="day-card__header"><div><h3>${day}</h3><span>${formatShortDate(addDays(startDate,index))}</span></div><div class="day-calories"><strong>${totals.daily[index]}</strong><small>known kcal planned</small></div></header><div class="stack">${MEAL_TYPES.map(meal=>mealCell(index,meal)).join('')}</div></article>`).join('');
+    const content=`<div class="stack stack--lg"><section class="card planner-toolbar"><button class="button button--ghost" type="button" data-week-change="-7">← Previous</button><div class="planner-toolbar__title"><p class="eyebrow">Week of</p><h2>${escapeHtml(formatWeekRange(weekStart))}</h2><button class="text-button" type="button" data-week-current>This week</button></div><button class="button button--ghost" type="button" data-week-change="7">Next →</button><div class="metric metric--compact"><span>${totals.weekly}</span><small>known kcal / week</small></div></section>${recipeOptions.length?'':'<div class="notice">You have no saved recipes yet. Planner slots still support custom meal names.</div>'}<section class="planner-grid">${days}</section></div>`;
+    this.root.innerHTML=sectionLayout('Planner',content,{subtitle:'Breakfast · Lunch · Dinner'});this.bind();
   }
-
-  bind() {
-    this.root.querySelectorAll('[data-week-change]').forEach(button => button.addEventListener('click', () => this.context.actions.changePlannerWeek(Number(button.dataset.weekChange))));
-    this.root.querySelector('[data-week-current]').addEventListener('click', () => this.context.actions.resetPlannerWeek());
-
-    this.root.querySelectorAll('[data-meal-slot]').forEach(slot => {
-      const select = slot.querySelector('[data-meal-select]');
-      const customInput = slot.querySelector('[data-custom-meal]');
-      select.addEventListener('change', () => {
-        if (select.value === 'custom') {
-          customInput.hidden = false;
-          customInput.focus();
-        } else if (select.value.startsWith('recipe:')) {
-          customInput.hidden = true;
-          this.saveSlot(slot, { type: 'recipe', recipeId: select.value.slice(7) });
-        } else {
-          customInput.hidden = true;
-          customInput.value = '';
-          this.saveSlot(slot, null);
-        }
-      });
-      customInput.addEventListener('change', () => this.saveSlot(slot, { type: 'custom', name: customInput.value.trim() }));
-    });
-  }
-
-  saveSlot(slot, meal) {
-    this.context.actions.savePlannerMeal(Number(slot.dataset.day), slot.dataset.meal, meal);
-  }
+  bind(){this.root.querySelectorAll('[data-week-change]').forEach(button=>button.addEventListener('click',()=>this.context.actions.changePlannerWeek(Number(button.dataset.weekChange))));this.root.querySelector('[data-week-current]').addEventListener('click',()=>this.context.actions.resetPlannerWeek());this.root.querySelectorAll('[data-meal-slot]').forEach(slot=>{const select=slot.querySelector('[data-meal-select]');const customInput=slot.querySelector('[data-custom-meal]');select.addEventListener('change',()=>{if(select.value==='custom'){customInput.hidden=false;customInput.focus();}else if(select.value.startsWith('recipe:')){customInput.hidden=true;this.saveSlot(slot,{type:'recipe',recipeId:select.value.slice(7)});}else{customInput.hidden=true;customInput.value='';this.saveSlot(slot,null);}});customInput.addEventListener('change',()=>this.saveSlot(slot,{type:'custom',name:customInput.value.trim()}));});}
+  saveSlot(slot,meal){this.context.actions.savePlannerMeal(Number(slot.dataset.day),slot.dataset.meal,meal);}
 }

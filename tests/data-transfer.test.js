@@ -2,16 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildExportPayload, validateImportPayload } from '../js/persistence/dataTransfer.js';
 
-test('export payload round-trips through import validation', () => {
-  const state = { foods: [{ id: 'f1' }], recipes: [{ id: 'r1' }], planner: { weeks: {} } };
-  const payload = buildExportPayload(state);
-  assert.deepEqual(validateImportPayload(payload), state);
+test('v2 export payload round-trips through import validation', () => {
+  const state = { items: [{ id: 'i1' }], recipes: [{ id: 'r1' }], planner: { weeks: {} }, shopping: { shops: [{ id: 'shop' }] } };
+  const parsed = validateImportPayload(buildExportPayload(state));
+  assert.equal(parsed.schemaVersion, 2);
+  assert.deepEqual(parsed.data, state);
 });
 
-test('shopping data round-trips when present', () => {
-  const state = { foods: [], recipes: [], planner: { weeks: {} }, shopping: { shops: [{ id: 'shop' }] } };
-  const payload = buildExportPayload(state);
-  assert.deepEqual(validateImportPayload(payload), state);
+test('v1 backup remains accepted for migration', () => {
+  const parsed = validateImportPayload({ app: 'RecipeApp', schemaVersion: 1, data: { foods: [], recipes: [], planner: { weeks: {} } } });
+  assert.equal(parsed.schemaVersion, 1);
+  assert.deepEqual(parsed.data.shopping, { shops: [] });
 });
 
 test('import rejects non RecipeApp files', () => {
