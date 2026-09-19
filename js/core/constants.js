@@ -1,4 +1,4 @@
-export const APP_VERSION = '2.0.0';
+export const APP_VERSION = '2.0.1';
 export const DATA_SCHEMA_VERSION = 2;
 
 export const STORAGE_KEYS = Object.freeze({

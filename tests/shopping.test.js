@@ -7,6 +7,7 @@ import {
   incrementShoppingItem,
   lockShoppingItems,
   rankedShopItems,
+  removeShoppingItem,
   selectedShopItems,
   toggleCollectedItem
 } from '../js/domain/shoppingService.js';
@@ -63,4 +64,19 @@ test('recipe ingredients add once to preferred shops', () => {
   assert.equal(result.shopping.shops[0].current.quantities.milk, 1);
   assert.equal(result.shopping.shops[0].current.quantities.bread, 1);
   assert.deepEqual(result.added.sort(), ['Bread', 'Milk']);
+});
+
+test('selected item can be removed before locking without changing frequency', () => {
+  let state = blank();
+  state.shops[0].frequency = { milk: 4 };
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = removeShoppingItem(state, 'shop', 'milk');
+  assert.equal(state.shops[0].current.quantities.milk, undefined);
+  assert.equal(state.shops[0].frequency.milk, 4);
+
+  state = incrementShoppingItem(state, 'shop', 'bread');
+  state = lockShoppingItems(state, 'shop');
+  state = removeShoppingItem(state, 'shop', 'bread');
+  assert.equal(state.shops[0].current.quantities.bread, 1, 'locked lists cannot remove items');
 });
