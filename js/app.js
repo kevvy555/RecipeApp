@@ -66,7 +66,7 @@ class RecipeApp {
         lockShoppingItems: shopId => this.lockShoppingItems(shopId),
         toggleCollectedShoppingItem: (shopId, itemId) => this.toggleCollectedShoppingItem(shopId, itemId),
         completeShoppingShop: shopId => this.completeShoppingShop(shopId),
-        addShoppingItem: (shopId, item) => this.addShoppingItem(shopId, item),
+        addCatalogItemToShop: (shopId, itemId) => this.addCatalogItemToShop(shopId, itemId),
         setItemShopAvailability: (itemId, shopId, available) => this.changeItemShopAvailability(itemId, shopId, available)
       }
     };
@@ -139,18 +139,12 @@ class RecipeApp {
   toggleCollectedShoppingItem(shopId, itemId) { this.saveShoppingState(toggleCollectedItem(this.state.shopping, shopId, itemId)); }
   completeShoppingShop(shopId) { this.state.shopping = completeShoppingShop(this.state.shopping, shopId); this.store.setShopping(this.state.shopping); this.shoppingShopId = null; this.render(); }
 
-  addShoppingItem(shopId, input) {
-    const name = String(input.name || '').trim(); if (!name) return;
-    const existing = this.state.items.find(item => item.name.localeCompare(name, undefined, { sensitivity:'accent' }) === 0);
-    if (existing) {
-      const link = existing.shops?.find(entry => entry.shopId === shopId);
-      if (link?.available !== false) { alert(`“${existing.name}” is already available from this shop.`); return; }
-      const message = link ? `“${existing.name}” already exists but is unavailable here. Restore it?` : `“${existing.name}” already exists. Add it to this shop?`;
-      if (!confirm(message)) return;
-      const updated = associateItemWithShop(existing, shopId, { available:true, makePreferred:!existing.preferredShopId });
-      this.saveItem(updated); return;
-    }
-    this.saveItem(normalizeItem({ ...input, preferredShopId:shopId, shops:[{shopId,available:true}], source:'user' }, shopId));
+  addCatalogItemToShop(shopId, itemId) {
+    const index = this.state.items.findIndex(item => item.id === itemId);
+    if (index < 0) return;
+    this.state.items[index] = associateItemWithShop(this.state.items[index], shopId, { available: true, makePreferred: true });
+    this.store.setItems(this.state.items);
+    this.render();
   }
 
   changeItemShopAvailability(itemId, shopId, available) {

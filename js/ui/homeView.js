@@ -2,9 +2,9 @@ export function renderHomeView() {
   return `
     <section class="home-screen" aria-label="Recipe App home">
       <button class="home-tile home-tile--foods" type="button" data-route="foods">
-        <span class="home-tile__icon" aria-hidden="true">🥕</span>
-        <span class="home-tile__title">Foods</span>
-        <span class="home-tile__caption">Calories by weight</span>
+        <span class="home-tile__icon" aria-hidden="true">🧺</span>
+        <span class="home-tile__title">Groceries</span>
+        <span class="home-tile__caption">Master item catalogue</span>
       </button>
       <button class="home-tile home-tile--recipes" type="button" data-route="recipes">
         <span class="home-tile__icon" aria-hidden="true">🍳</span>

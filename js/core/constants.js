@@ -1,4 +1,4 @@
-export const APP_VERSION = '2.0.1';
+export const APP_VERSION = '2.1.0';
 export const DATA_SCHEMA_VERSION = 2;
 
 export const STORAGE_KEYS = Object.freeze({
@@ -15,9 +15,10 @@ export const LEGACY_STORAGE_KEYS = Object.freeze({
   shopping: 'recipeApp.shopping.v1'
 });
 
-export const FOOD_CATEGORIES = Object.freeze([
+export const GROCERY_CATEGORIES = Object.freeze([
   'Protein', 'Fish & Seafood', 'Carbohydrate', 'Bread & Bakery', 'Breakfast', 'Vegetable', 'Fruit', 'Dairy',
-  'Fat & Oil', 'Nuts & Seeds', 'Beans & Pulses', 'Sauce & Condiment', 'Pantry', 'Snack & Sweet', 'Drink', 'Other'
+  'Fat & Oil', 'Nuts & Seeds', 'Beans & Pulses', 'Sauce & Condiment', 'Pantry', 'Snack & Sweet', 'Drink',
+  'Household', 'Cleaning', 'Toiletries', 'Paper Goods', 'Pet Supplies', 'Other'
 ]);
 
 export const DAYS = Object.freeze(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);

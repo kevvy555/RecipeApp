@@ -10,3 +10,26 @@
   .manage-item-row .button { grid-column: 1 / -1; width: 100%; }
   .data-table th:nth-child(5), .data-table td:nth-child(5) { display: none; }
 }
+
+.catalog-picker { display: grid; gap: 12px; padding: 16px 18px; }
+.catalog-picker .help-text { margin: 0; }
+.catalog-picker-list { display: grid; gap: 8px; max-height: 55dvh; overflow: auto; }
+.catalog-picker-row {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0f172a;
+  color: var(--text);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+.catalog-picker-row:hover { background: #172033; border-color: #475569; }
+.catalog-picker-row span:first-child { display: grid; gap: 3px; min-width: 0; }
+.catalog-picker-row small { color: var(--muted); }
+@media (max-width: 640px) {
+  .catalog-picker-row { align-items: flex-start; flex-direction: column; }
+}

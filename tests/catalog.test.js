@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSeedCatalog, migrateLegacyState, itemAvailableAtShop, normalizeItem, setItemShopAvailability } from '../js/domain/catalogService.js';
+import { associateItemWithShop, buildSeedCatalog, migrateLegacyState, itemAvailableAtShop, normalizeItem, setItemShopAvailability } from '../js/domain/catalogService.js';
 
 const foodSeed = {
   Protein: [['Chicken breast, cooked', 165, '']],
@@ -47,4 +47,20 @@ test('availability is per shop and does not remove the preferred-shop relationsh
 test('non-food items never retain calorie data', () => {
   const item = normalizeItem({ name: 'Kitchen Roll', category: 'Household', isFood: false, caloriesPer100g: 123, preferredShopId: 'supermarket' });
   assert.equal(item.caloriesPer100g, null);
+});
+
+test('adding an existing Grocery item to a shop makes that shop preferred without duplicating the item', () => {
+  const item = normalizeItem({
+    id: 'item-kitchen-roll',
+    name: 'Kitchen Roll',
+    category: 'Paper Goods',
+    isFood: false,
+    preferredShopId: 'supermarket',
+    shops: [{ shopId: 'supermarket', available: true }]
+  });
+  const next = associateItemWithShop(item, 'farm-shop', { available: true, makePreferred: true });
+  assert.equal(next.id, item.id);
+  assert.equal(next.preferredShopId, 'farm-shop');
+  assert.equal(itemAvailableAtShop(next, 'supermarket'), true);
+  assert.equal(itemAvailableAtShop(next, 'farm-shop'), true);
 });
