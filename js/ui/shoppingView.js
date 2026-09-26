@@ -1,6 +1,6 @@
 import { escapeHtml } from '../core/utils.js';
 import { itemAvailableAtShop } from '../domain/catalogService.js';
-import { rankedShopItems, selectedItemCount, selectedShopItems, shopItems } from '../domain/shoppingService.js';
+import { groupItemsByCategory, rankedShopItems, selectedItemCount, selectedShopItems, shopItems } from '../domain/shoppingService.js';
 import { sectionLayout } from './layout.js';
 import { openDialog } from './dialog.js';
 import { openItemPicker } from './itemPicker.js';
@@ -36,16 +36,20 @@ export class ShoppingView {
     const items = locked ? selectedShopItems(shop, this.context.state.items) : rankedShopItems(shop, this.context.state.items);
     const selected = selectedItemCount(shop);
 
-    const itemCards = items.map(item => {
-      const quantity = Number(shop.current?.quantities?.[item.id] || 0);
-      const collected = locked && Boolean(shop.current?.collected?.[item.id]);
-      const removable = !locked && quantity > 0;
-      const classes = ['shopping-item', quantity > 0 ? 'shopping-item--selected' : '', locked ? 'shopping-item--locked' : '', collected ? 'shopping-item--collected' : '', removable ? 'shopping-item--removable' : ''].filter(Boolean).join(' ');
-      const action = locked ? 'data-toggle-collected-shopping-item' : 'data-increment-shopping-item';
-      const searchText = `${item.name} ${item.category || ''} ${item.notes || ''}`.toLowerCase();
-      const main = `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name">${escapeHtml(item.name)}</span><span class="shopping-item__category">${escapeHtml(item.category)}</span>${quantity > 0 ? `<span class="shopping-item__quantity">${quantity}×</span>` : ''}${collected ? '<span class="shopping-item__check">✓</span>' : ''}</button>`;
-      const remove = removable ? `<button class="shopping-item__remove" type="button" data-remove-shopping-item="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from shopping list">✕</button>` : '';
-      return `<div class="shopping-item-wrap" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(item.category || '')}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${remove}</div>`;
+    const categoryGroups = groupItemsByCategory(items);
+    const categorySections = categoryGroups.map(group => {
+      const itemCards = group.items.map(item => {
+        const quantity = Number(shop.current?.quantities?.[item.id] || 0);
+        const collected = locked && Boolean(shop.current?.collected?.[item.id]);
+        const removable = !locked && quantity > 0;
+        const classes = ['shopping-item', quantity > 0 ? 'shopping-item--selected' : '', locked ? 'shopping-item--locked' : '', collected ? 'shopping-item--collected' : '', removable ? 'shopping-item--removable' : ''].filter(Boolean).join(' ');
+        const action = locked ? 'data-toggle-collected-shopping-item' : 'data-increment-shopping-item';
+        const searchText = `${item.name} ${item.category || ''} ${item.notes || ''}`.toLowerCase();
+        const main = `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name">${escapeHtml(item.name)}</span>${quantity > 0 ? `<span class="shopping-item__quantity">${quantity}×</span>` : ''}${collected ? '<span class="shopping-item__check">✓</span>' : ''}</button>`;
+        const remove = removable ? `<button class="shopping-item__remove" type="button" data-remove-shopping-item="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from shopping list">✕</button>` : '';
+        return `<div class="shopping-item-wrap" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(group.category)}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${remove}</div>`;
+      }).join('');
+      return `<section class="shopping-category-group" data-shop-category-group data-category="${escapeHtml(group.category)}"><header class="shopping-category-heading"><span>${escapeHtml(group.category)}</span><span data-category-visible-count>${group.items.length}</span></header><div class="shopping-item-grid">${itemCards}</div></section>`;
     }).join('');
 
     const actions = locked
@@ -63,7 +67,7 @@ export class ShoppingView {
       <span class="muted small" data-shop-filter-count></span>
     </section>` : '';
 
-    this.root.innerHTML = `<section class="screen screen--section screen--shopping"><header class="app-bar"><button class="icon-button" type="button" data-shopping-back>←</button><div class="app-bar__titles"><h1>${escapeHtml(shop.name)}</h1><p class="app-bar__subtitle">${locked ? `${selected} locked item${selected === 1 ? '' : 's'}` : `${shopItems(this.context.state.items, shop.id).length} available items`}</p></div><div class="app-bar__actions"><button class="button button--ghost" type="button" data-global-action="import">Import</button><button class="button button--ghost" type="button" data-global-action="export">Export</button></div></header><div class="screen__content"><div class="stack stack--lg"><section class="card shopping-list-header"><div><p class="eyebrow">${locked ? 'Locked shopping list' : 'Build shopping list'}</p><h2>${locked ? 'Collect your items' : 'Tap what you need'}</h2><p class="muted">${escapeHtml(help)}</p></div>${actions}</section>${filters}<div class="shopping-item-grid">${itemCards || '<div class="empty-state"><h3>No available items</h3><p>Add an existing item from Groceries or restore one in Manage Items.</p></div>'}</div><p class="muted" data-shop-filter-empty hidden>No items match those filters.</p></div></div></section>`;
+    this.root.innerHTML = `<section class="screen screen--section screen--shopping"><header class="app-bar"><button class="icon-button" type="button" data-shopping-back>←</button><div class="app-bar__titles"><h1>${escapeHtml(shop.name)}</h1><p class="app-bar__subtitle">${locked ? `${selected} locked item${selected === 1 ? '' : 's'}` : `${shopItems(this.context.state.items, shop.id).length} available items`}</p></div><div class="app-bar__actions"><button class="button button--ghost" type="button" data-global-action="import">Import</button><button class="button button--ghost" type="button" data-global-action="export">Export</button></div></header><div class="screen__content"><div class="stack stack--lg"><section class="card shopping-list-header"><div><p class="eyebrow">${locked ? 'Locked shopping list' : 'Build shopping list'}</p><h2>${locked ? 'Collect your items' : 'Tap what you need'}</h2><p class="muted">${escapeHtml(help)}</p></div>${actions}</section>${filters}<div class="shopping-category-list">${categorySections || '<div class="empty-state"><h3>No available items</h3><p>Add an existing item from Groceries or restore one in Manage Items.</p></div>'}</div><p class="muted" data-shop-filter-empty hidden>No items match those filters.</p></div></div></section>`;
     this.bindShop(shopId, locked);
   }
 
@@ -88,6 +92,13 @@ export class ShoppingView {
           && (!selection || row.dataset.selection === selection);
         row.hidden = !matches;
         if (matches) visible += 1;
+      });
+      this.root.querySelectorAll('[data-shop-category-group]').forEach(group => {
+        const rows = [...group.querySelectorAll('[data-shop-item-row]')];
+        const categoryVisible = rows.filter(row => !row.hidden).length;
+        group.hidden = categoryVisible === 0;
+        const categoryCount = group.querySelector('[data-category-visible-count]');
+        if (categoryCount) categoryCount.textContent = categoryVisible;
       });
       const count = this.root.querySelector('[data-shop-filter-count]');
       if (count) count.textContent = `${visible} shown`;

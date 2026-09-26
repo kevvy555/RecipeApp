@@ -4,6 +4,7 @@ import {
   addRecipeToShopping,
   clearShoppingSelection,
   completeShoppingShop,
+  groupItemsByCategory,
   incrementShoppingItem,
   lockShoppingItems,
   rankedShopItems,
@@ -101,4 +102,17 @@ test('locked list can be unlocked for editing without losing its selections', ()
 
   state = lockShoppingItems(state, 'shop');
   assert.equal(state.shops[0].current.locked, true);
+});
+
+test('category grouping preserves ranked order and groups matching items', () => {
+  const ranked = [
+    { id: 'milk', name: 'Milk', category: 'Dairy' },
+    { id: 'bread', name: 'Bread', category: 'Bakery' },
+    { id: 'cheese', name: 'Cheese', category: 'Dairy' },
+    { id: 'rolls', name: 'Rolls', category: 'Bakery' }
+  ];
+  const groups = groupItemsByCategory(ranked);
+  assert.deepEqual(groups.map(group => group.category), ['Dairy', 'Bakery']);
+  assert.deepEqual(groups[0].items.map(item => item.id), ['milk', 'cheese']);
+  assert.deepEqual(groups[1].items.map(item => item.id), ['bread', 'rolls']);
 });

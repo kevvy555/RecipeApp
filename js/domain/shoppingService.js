@@ -14,6 +14,7 @@ export function shopItems(items, shopId, {includeUnavailable=false}={}) { return
 export function rankedShopItems(shop, items) { const freq=shop?.frequency||{}; return shopItems(items,shop?.id).sort((a,b)=>Number(freq[b.id]||0)-Number(freq[a.id]||0) || a.name.localeCompare(b.name,undefined,{sensitivity:'base'})); }
 export function selectedShopItems(shop, items) { return rankedShopItems(shop,items).filter(item=>Number(shop.current?.quantities?.[item.id]||0)>0); }
 export function selectedItemCount(shop) { return Object.values(shop?.current?.quantities||{}).filter(q=>Number(q)>0).length; }
+export function groupItemsByCategory(items) { const groups=[]; const byCategory=new Map(); for(const item of items||[]) { const category=String(item.category||'Other'); let group=byCategory.get(category); if(!group) { group={category,items:[]}; byCategory.set(category,group); groups.push(group); } group.items.push(item); } return groups; }
 export function addRecipeToShopping(state, recipe, items) {
   let next=clone(state); const itemMap=new Map((items||[]).map(item=>[item.id,item])); const seen=new Set(); const added=[]; const lockedShops=new Set(); const unavailable=[];
   for(const ingredient of recipe?.ingredients||[]) {
