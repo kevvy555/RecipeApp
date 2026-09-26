@@ -42,12 +42,14 @@ export class ShoppingView {
         const quantity = Number(shop.current?.quantities?.[item.id] || 0);
         const collected = locked && Boolean(shop.current?.collected?.[item.id]);
         const removable = !locked && quantity > 0;
-        const classes = ['shopping-item', quantity > 0 ? 'shopping-item--selected' : '', locked ? 'shopping-item--locked' : '', collected ? 'shopping-item--collected' : '', removable ? 'shopping-item--removable' : ''].filter(Boolean).join(' ');
+        const hideable = !locked && quantity === 0;
+        const classes = ['shopping-item', quantity > 0 ? 'shopping-item--selected' : '', locked ? 'shopping-item--locked' : '', collected ? 'shopping-item--collected' : '', removable ? 'shopping-item--removable' : '', hideable ? 'shopping-item--hideable' : ''].filter(Boolean).join(' ');
         const action = locked ? 'data-toggle-collected-shopping-item' : 'data-increment-shopping-item';
         const searchText = `${item.name} ${item.category || ''} ${item.notes || ''}`.toLowerCase();
         const main = `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name">${escapeHtml(item.name)}</span>${quantity > 0 ? `<span class="shopping-item__quantity">${quantity}×</span>` : ''}${collected ? '<span class="shopping-item__check">✓</span>' : ''}</button>`;
-        const remove = removable ? `<button class="shopping-item__remove" type="button" data-remove-shopping-item="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from shopping list">✕</button>` : '';
-        return `<div class="shopping-item-wrap" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(group.category)}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${remove}</div>`;
+        const remove = removable ? `<button class="shopping-item__remove" type="button" data-remove-shopping-item="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from this shopping trip">✕</button>` : '';
+        const hide = hideable ? `<button class="shopping-item__hide" type="button" data-hide-shopping-option="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from this shop's options">✕</button>` : '';
+        return `<div class="shopping-item-wrap" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(group.category)}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${remove}${hide}</div>`;
       }).join('');
       const categoryKey = `${shopId}::${group.category}`;
       const collapsed = this.context.shoppingCollapsedCategories?.has(categoryKey) || false;
@@ -88,6 +90,7 @@ export class ShoppingView {
     this.root.querySelector('[data-add-shopping-item]')?.addEventListener('click', () => this.openAddItem(shopId));
     this.root.querySelector('[data-manage-shopping-items]')?.addEventListener('click', () => this.openManageItems(shopId));
     this.root.querySelectorAll('[data-remove-shopping-item]').forEach(button => button.addEventListener('click', () => this.context.actions.removeShoppingItem(shopId, button.dataset.removeShoppingItem)));
+    this.root.querySelectorAll('[data-hide-shopping-option]').forEach(button => button.addEventListener('click', () => this.context.actions.setItemShopAvailability(button.dataset.hideShoppingOption, shopId, false)));
     this.root.querySelectorAll('[data-toggle-shopping-category]').forEach(button => button.addEventListener('click', () => {
       const category = button.dataset.toggleShoppingCategory;
       const group = button.closest('[data-shop-category-group]');

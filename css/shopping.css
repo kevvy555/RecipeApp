@@ -136,7 +136,9 @@
 .shopping-item--selected:hover { background: rgba(22, 101, 52, .9); }
 .shopping-item--removable { padding-right: 100px; }
 .shopping-item--removable .shopping-item__quantity { right: 52px; }
-.shopping-item__remove {
+.shopping-item--hideable { padding-right: 58px; }
+.shopping-item__remove,
+.shopping-item__hide {
   position: absolute;
   z-index: 3;
   top: 50%;
@@ -155,8 +157,15 @@
   font-weight: 900;
   line-height: 1;
 }
+.shopping-item__hide {
+  border-color: rgba(250, 204, 21, .65);
+  background: #713f12;
+  color: #fef08a;
+}
 .shopping-item__remove:hover { background: #991b1b; border-color: #fca5a5; }
-.shopping-item__remove:active { transform: translateY(-50%) scale(.94); }
+.shopping-item__hide:hover { background: #854d0e; border-color: #fde047; }
+.shopping-item__remove:active,
+.shopping-item__hide:active { transform: translateY(-50%) scale(.94); }
 .shopping-item--locked { min-height: 100px; }
 .shopping-item--collected {
   border-color: #475569;
@@ -214,7 +223,9 @@
   .shopping-item { min-height: 84px; padding: 11px 48px 11px 12px; }
   .shopping-item--removable { padding-right: 92px; }
   .shopping-item--removable .shopping-item__quantity { right: 47px; }
-  .shopping-item__remove { right: 9px; width: 30px; height: 30px; }
+  .shopping-item--hideable { padding-right: 48px; }
+  .shopping-item__remove,
+  .shopping-item__hide { right: 9px; width: 30px; height: 30px; }
   .shopping-item__quantity { right: 10px; min-width: 34px; height: 34px; }
   .shopping-item--collected .shopping-item__quantity { right: 43px; }
   .shopping-item__check { right: 10px; }
@@ -359,10 +370,14 @@
   .screen--shopping .shopping-item--removable {
     padding-right: 62px;
   }
+  .screen--shopping .shopping-item--hideable {
+    padding-right: 34px;
+  }
   .screen--shopping .shopping-item--removable .shopping-item__quantity {
     right: 33px;
   }
-  .screen--shopping .shopping-item__remove {
+  .screen--shopping .shopping-item__remove,
+  .screen--shopping .shopping-item__hide {
     right: 5px;
     width: 25px;
     height: 25px;
