@@ -2,7 +2,8 @@ import { LocalDataStore } from './persistence/storage.js';
 import { ensureCatalogData } from './data/catalogSeedLoader.js';
 import { downloadExport, readImportFile } from './persistence/dataTransfer.js';
 import { addDays, startOfWeekMonday, toIsoDate } from './core/utils.js';
-import { associateItemWithShop, migrateLegacyState, normalizeItem, setItemShopAvailability } from './domain/catalogService.js';
+import { CATALOG_REVISION } from './core/constants.js';
+import { applyShoppingCatalogRevision, associateItemWithShop, migrateLegacyState, normalizeItem, setItemShopAvailability } from './domain/catalogService.js';
 import { removeRecipeFromPlanner, setMeal } from './domain/plannerService.js';
 import { addRecipeToShopping, clearShoppingSelection, completeShoppingShop, incrementShoppingItem, lockShoppingItems, removeShoppingItem, toggleCollectedItem, unlockShoppingItems } from './domain/shoppingService.js';
 import { getRoute, navigate } from './ui/router.js';
@@ -175,7 +176,9 @@ class RecipeApp {
         const imported = await readImportFile(input.files[0]);
         if (!confirm('Importing will replace all item, recipe, planner and shopping data stored on this device. Continue?')) return;
         const importedState = imported.schemaVersion === 1 ? migrateLegacyState(imported.data, this.seedCatalog) : imported.data;
-        this.store.replaceState(importedState); this.state = this.store.loadState(); this.shoppingShopId = null; this.render(); alert('RecipeApp data imported successfully.');
+        this.store.replaceState(applyShoppingCatalogRevision(importedState));
+        this.store.setCatalogRevision(CATALOG_REVISION);
+        this.state = this.store.loadState(); this.shoppingShopId = null; this.render(); alert('RecipeApp data imported successfully.');
       } catch (error) { alert(`Import failed: ${error.message}`); }
     });
     input.click();

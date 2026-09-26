@@ -2,13 +2,14 @@
 
 A lightweight, local-first groceries, recipe, weekly meal planning and shopping-list web app. It uses plain HTML/CSS/JavaScript, ES modules, separate domain/persistence/UI concerns and JSON seed data, with no framework or build dependency.
 
-## Version 2.2 features
+## Version 2.3 features
 
 - **Home** — Groceries, Recipes, Planner and Shopping.
 - **Groceries** — the single master catalogue for everything you buy, including food and non-food items, with live partial-match search and category/type/preferred-shop filters.
 - **Food vs non-food** — food items may have kcal per 100g and can be used by Recipes; non-food items have no calorie data.
 - **Preferred shops** — every Grocery item has a preferred shop and may also be available from other shops.
 - **Shopping uses Groceries** — Shopping never creates catalogue records. **Add from Groceries** associates an existing item with the selected shop and makes that shop its preferred shop.
+- **Nutrition variants stay out of Shopping** — cooked/fried/prepared/baked/drained nutritional records remain available to Groceries/Recipes but are not default shop options.
 - **Recipes** — ingredients reference shared food items, use weights, calculate known calories, and support step-by-step instructions. Ingredient selection uses live partial-match search with category and preferred-shop filters.
 - **Recipe → Shopping** — add a recipe's unique ingredients to their preferred shops with one action.
 - **Planner** — Monday–Sunday Breakfast/Lunch/Dinner planner using saved recipes or custom meals.

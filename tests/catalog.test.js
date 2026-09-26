@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { associateItemWithShop, buildSeedCatalog, migrateLegacyState, itemAvailableAtShop, normalizeItem, setItemShopAvailability } from '../js/domain/catalogService.js';
+import { applyShoppingCatalogRevision, associateItemWithShop, buildSeedCatalog, migrateLegacyState, itemAvailableAtShop, normalizeItem, setItemShopAvailability } from '../js/domain/catalogService.js';
 
 const foodSeed = {
   Protein: [['Chicken breast, cooked', 165, '']],
@@ -63,4 +63,50 @@ test('adding an existing Grocery item to a shop makes that shop preferred withou
   assert.equal(next.preferredShopId, 'farm-shop');
   assert.equal(itemAvailableAtShop(next, 'supermarket'), true);
   assert.equal(itemAvailableAtShop(next, 'farm-shop'), true);
+});
+
+test('nutrition preparation variants are kept in Groceries but hidden from Shopping by default', () => {
+  const catalog = buildSeedCatalog({
+    Protein: [['Chicken thigh, cooked', 209, ''], ['Turkey mince 5% fat', 149, '']]
+  }, { shops: [{ id: 'butchers', name: 'Butchers', items: [] }] });
+  const cooked = catalog.items.find(item => item.name === 'Chicken thigh, cooked');
+  const mince = catalog.items.find(item => item.name === 'Turkey mince 5% fat');
+  assert.equal(itemAvailableAtShop(cooked, 'butchers'), false);
+  assert.equal(itemAvailableAtShop(mince, 'butchers'), true);
+});
+
+test('shopping seed can preserve preferred shop and explicit unavailable state', () => {
+  const catalog = buildSeedCatalog({ Dairy: [['Skimmed milk', 34, '']] }, {
+    shops: [
+      { id: 'farm-shop', name: 'Farm Shop', items: [{ id: 'milk', name: 'Skimmed milk', preferredShopId: 'supermarket', available: false }] },
+      { id: 'supermarket', name: 'Supermarket', items: [] }
+    ]
+  });
+  const milk = catalog.items.find(item => item.name === 'Skimmed milk');
+  assert.equal(milk.preferredShopId, 'supermarket');
+  assert.equal(itemAvailableAtShop(milk, 'farm-shop'), false);
+});
+
+test('catalog revision hides preparation variants and clears current selection without deleting frequency', () => {
+  const state = {
+    items: [
+      { id: 'cooked', name: 'Carrot, cooked', shops: [{ shopId: 'farm-shop', available: true }] },
+      { id: 'raw', name: 'Carrot, raw', shops: [{ shopId: 'farm-shop', available: true }] }
+    ],
+    recipes: [],
+    planner: { weeks: {} },
+    shopping: {
+      shops: [{
+        id: 'farm-shop',
+        frequency: { cooked: 4 },
+        current: { locked: false, quantities: { cooked: 2, raw: 1 }, collected: { cooked: true } }
+      }]
+    }
+  };
+  const next = applyShoppingCatalogRevision(state);
+  assert.equal(itemAvailableAtShop(next.items[0], 'farm-shop'), false);
+  assert.equal(itemAvailableAtShop(next.items[1], 'farm-shop'), true);
+  assert.equal(next.shopping.shops[0].current.quantities.cooked, undefined);
+  assert.equal(next.shopping.shops[0].current.quantities.raw, 1);
+  assert.equal(next.shopping.shops[0].frequency.cooked, 4);
 });

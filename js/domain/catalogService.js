@@ -83,6 +83,37 @@ function uniqueId(base, used) {
 
 function shopLink(shopId, available=true) { return { shopId, available }; }
 
+export function isShoppingPreparationVariant(name) {
+  const normalized = String(name || '').trim().toLowerCase();
+  if (normalized === 'baked beans in tomato sauce') return false;
+  return /\b(cooked|fried|prepared|baked|drained)\b/.test(normalized)
+    || normalized.includes('made with water')
+    || normalized.includes('air popped');
+}
+
+export function applyShoppingCatalogRevision(state) {
+  const next = structuredClone(state || {});
+  const hiddenIds = new Set();
+
+  next.items = (next.items || []).map(item => {
+    if (!isShoppingPreparationVariant(item.name)) return item;
+    hiddenIds.add(item.id);
+    const updated = structuredClone(item);
+    updated.shops = (updated.shops || []).map(link => ({ ...link, available: false }));
+    updated.updatedAt = new Date().toISOString();
+    return updated;
+  });
+
+  next.shopping = structuredClone(next.shopping || { shops: [] });
+  for (const shop of next.shopping.shops || []) {
+    for (const itemId of hiddenIds) {
+      delete shop.current?.quantities?.[itemId];
+      delete shop.current?.collected?.[itemId];
+    }
+  }
+  return next;
+}
+
 export function buildSeedCatalog(foodSeed, shoppingSeed) {
   const foods = flattenFoodSeed(foodSeed);
   const foodByName = new Map(foods.map(food => [food.name.toLowerCase(), food]));
@@ -102,15 +133,16 @@ export function buildSeedCatalog(foodSeed, shoppingSeed) {
         const foodName = SHOPPING_FOOD_ALIASES[sourceItem.name] || sourceItem.name;
         const food = foodByName.get(foodName.toLowerCase()) || null;
         const id = uniqueId(sourceItem.name, usedIds);
+        const preferredShopId = sourceItem.preferredShopId || shop.id;
         item = {
           id,
           name: sourceItem.name,
-          category: sourceItem.category || food?.category || 'Other',
+          category: food?.category || sourceItem.category || 'Other',
           isFood: true,
           caloriesPer100g: Number.isFinite(food?.caloriesPer100g) ? food.caloriesPer100g : null,
           notes: food?.notes || '',
-          preferredShopId: shop.id,
-          shops: [shopLink(shop.id)],
+          preferredShopId,
+          shops: [shopLink(shop.id, sourceItem.available !== false)],
           source: 'seed'
         };
         items.push(item);
@@ -119,8 +151,11 @@ export function buildSeedCatalog(foodSeed, shoppingSeed) {
           usedFoodNames.add(food.name.toLowerCase());
           legacySeedIdToItemId[food.legacySeedId] = id;
         }
-      } else if (!item.shops.some(link => link.shopId === shop.id)) {
-        item.shops.push(shopLink(shop.id));
+      } else {
+        const existingLink = item.shops.find(link => link.shopId === shop.id);
+        if (existingLink) existingLink.available = sourceItem.available !== false;
+        else item.shops.push(shopLink(shop.id, sourceItem.available !== false));
+        if (sourceItem.preferredShopId) item.preferredShopId = sourceItem.preferredShopId;
       }
       legacyShoppingItemToItemId[`${shop.id}:${sourceItem.id}`] = item.id;
     }
@@ -138,7 +173,7 @@ export function buildSeedCatalog(foodSeed, shoppingSeed) {
       caloriesPer100g: Number.isFinite(food.caloriesPer100g) ? food.caloriesPer100g : null,
       notes: food.notes,
       preferredShopId,
-      shops: [shopLink(preferredShopId)],
+      shops: [shopLink(preferredShopId, !isShoppingPreparationVariant(food.name))],
       source: 'seed'
     });
     legacySeedIdToItemId[food.legacySeedId] = id;

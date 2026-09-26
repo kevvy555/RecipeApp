@@ -1,5 +1,5 @@
-import { STORAGE_KEYS } from '../core/constants.js';
-import { buildSeedCatalog, migrateLegacyState } from '../domain/catalogService.js';
+import { CATALOG_REVISION, STORAGE_KEYS } from '../core/constants.js';
+import { applyShoppingCatalogRevision, buildSeedCatalog, migrateLegacyState } from '../domain/catalogService.js';
 
 async function fetchJson(path, label) {
   const response = await fetch(path, { cache: 'no-store' });
@@ -21,7 +21,11 @@ export async function ensureCatalogData(store) {
   const seedCatalog = await loadSeedCatalog();
   if (!store.has(STORAGE_KEYS.items)) {
     const migrated = migrateLegacyState(store.loadLegacyState(), seedCatalog);
-    store.replaceState(migrated);
+    store.replaceState(applyShoppingCatalogRevision(migrated));
+    store.setCatalogRevision(CATALOG_REVISION);
+  } else if (store.getCatalogRevision() < CATALOG_REVISION) {
+    store.replaceState(applyShoppingCatalogRevision(store.loadState()));
+    store.setCatalogRevision(CATALOG_REVISION);
   }
   return seedCatalog;
 }

@@ -18,6 +18,8 @@ export class LocalDataStore {
   setPlanner(planner) { this.write(STORAGE_KEYS.planner, planner); }
   getShopping() { return this.read(STORAGE_KEYS.shopping, { shops: [] }); }
   setShopping(shopping) { this.write(STORAGE_KEYS.shopping, shopping); }
+  getCatalogRevision() { return Number(this.read(STORAGE_KEYS.catalogRevision, 0)) || 0; }
+  setCatalogRevision(revision) { this.write(STORAGE_KEYS.catalogRevision, Number(revision) || 0); }
   loadState() { return { items:this.getItems(), recipes:this.getRecipes(), planner:this.getPlanner(), shopping:this.getShopping() }; }
   loadLegacyState() {
     return {

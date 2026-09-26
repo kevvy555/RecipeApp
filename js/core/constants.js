@@ -1,11 +1,13 @@
-export const APP_VERSION = '2.2.4';
+export const APP_VERSION = '2.3.0';
 export const DATA_SCHEMA_VERSION = 2;
+export const CATALOG_REVISION = 1;
 
 export const STORAGE_KEYS = Object.freeze({
   items: 'recipeApp.items.v2',
   recipes: 'recipeApp.recipes.v2',
   planner: 'recipeApp.planner.v2',
-  shopping: 'recipeApp.shopping.v2'
+  shopping: 'recipeApp.shopping.v2',
+  catalogRevision: 'recipeApp.catalogRevision.v1'
 });
 
 export const LEGACY_STORAGE_KEYS = Object.freeze({
