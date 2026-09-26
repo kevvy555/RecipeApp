@@ -161,3 +161,168 @@
   .shopping-item--collected .shopping-item__quantity { right: 43px; }
   .shopping-item__check { right: 10px; }
 }
+
+/* Dense phone shopping layout */
+@media (max-width: 640px) {
+  .screen--shopping .app-bar {
+    min-height: 52px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 7px;
+    padding: 6px 7px;
+  }
+  .screen--shopping .app-bar .icon-button {
+    width: 36px;
+    height: 36px;
+    font-size: .9rem;
+    border-radius: 9px;
+  }
+  .screen--shopping .app-bar h1 {
+    font-size: 1.08rem;
+    line-height: 1.05;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .screen--shopping .app-bar__subtitle {
+    margin-top: 1px;
+    font-size: .65rem;
+    line-height: 1.1;
+  }
+  .screen--shopping .app-bar__actions {
+    grid-column: auto;
+    display: flex;
+    gap: 3px;
+    justify-content: flex-end;
+  }
+  .screen--shopping .app-bar__actions .button {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 6px 7px;
+    border-radius: 8px;
+    font-size: .68rem;
+    line-height: 1;
+  }
+
+  .screen--shopping .screen__content {
+    padding: 5px 6px 8px;
+  }
+  .screen--shopping .stack--lg {
+    gap: 5px;
+  }
+
+  .screen--shopping .shopping-list-header {
+    padding: 4px;
+    border-radius: 9px;
+    box-shadow: none;
+    border-color: rgba(148,163,184,.12);
+  }
+  .screen--shopping .shopping-list-header > div:first-child {
+    display: none;
+  }
+  .screen--shopping .shopping-actions,
+  .screen--shopping .shopping-actions--wrap {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    gap: 3px;
+  }
+  .screen--shopping .shopping-actions .button,
+  .screen--shopping .shopping-list-header > .shopping-action {
+    width: 100%;
+    min-width: 0;
+    padding: 6px 4px;
+    border-radius: 7px;
+    font-size: .67rem;
+    line-height: 1.05;
+  }
+  .screen--shopping .shopping-actions:not(.shopping-actions--wrap) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .screen--shopping .list-filter-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr) minmax(0, .9fr);
+    gap: 3px;
+    padding: 3px;
+    border-radius: 9px;
+    box-shadow: none;
+  }
+  .screen--shopping .list-filter-bar:not(:has([data-shop-list-selection])) {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  }
+  .screen--shopping .list-filter-bar input,
+  .screen--shopping .list-filter-bar select {
+    min-width: 0;
+    height: 32px;
+    padding: 4px 6px;
+    border-radius: 7px;
+    font-size: .67rem;
+  }
+  .screen--shopping .list-filter-bar [data-shop-filter-count] {
+    display: none;
+  }
+
+  .screen--shopping .shopping-item-grid {
+    gap: 4px;
+  }
+  .screen--shopping .shopping-item {
+    min-height: 54px;
+    padding: 6px 35px 6px 8px;
+    gap: 1px;
+    border-radius: 9px;
+  }
+  .screen--shopping .shopping-item--locked {
+    min-height: 54px;
+  }
+  .screen--shopping .shopping-item__name {
+    font-size: .79rem;
+    line-height: 1.05;
+    letter-spacing: -.01em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .screen--shopping .shopping-item__category {
+    max-width: 100%;
+    font-size: .58rem;
+    line-height: 1.05;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .screen--shopping .shopping-item__quantity {
+    right: 6px;
+    min-width: 26px;
+    height: 26px;
+    font-size: .68rem;
+    border-radius: 999px;
+  }
+  .screen--shopping .shopping-item--removable {
+    padding-right: 62px;
+  }
+  .screen--shopping .shopping-item--removable .shopping-item__quantity {
+    right: 33px;
+  }
+  .screen--shopping .shopping-item__remove {
+    right: 5px;
+    width: 25px;
+    height: 25px;
+    font-size: .72rem;
+    border-radius: 7px;
+  }
+  .screen--shopping .shopping-item--collected .shopping-item__quantity {
+    right: 33px;
+  }
+  .screen--shopping .shopping-item__check {
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    font-size: .72rem;
+  }
+
+  .screen--shopping [data-shop-filter-empty] {
+    margin: 4px 2px;
+    font-size: .7rem;
+  }
+}

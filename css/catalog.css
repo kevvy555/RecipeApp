@@ -65,3 +65,13 @@
   .manage-item-controls,
   .list-filter-bar { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 520px) {
+  .screen--shopping .list-filter-bar,
+  .screen--shopping .list-filter-bar:not(:has([data-shop-list-selection])) {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr) minmax(0, .9fr);
+  }
+  .screen--shopping .list-filter-bar:not(:has([data-shop-list-selection])) {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  }
+}
