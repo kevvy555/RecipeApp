@@ -20,6 +20,7 @@ class RecipeApp {
     this.seedCatalog = null;
     this.plannerWeekStart = toIsoDate(startOfWeekMonday());
     this.shoppingShopId = null;
+    this.shoppingCollapsedCategories = new Set();
   }
 
   async start() {
@@ -49,6 +50,7 @@ class RecipeApp {
       state: this.state,
       plannerWeekStart: this.plannerWeekStart,
       shoppingShopId: this.shoppingShopId,
+      shoppingCollapsedCategories: this.shoppingCollapsedCategories,
       actions: {
         saveItem: item => this.saveItem(item),
         deleteItem: id => this.deleteItem(id),
@@ -65,6 +67,7 @@ class RecipeApp {
         clearShoppingSelection: shopId => this.clearShoppingSelection(shopId),
         lockShoppingItems: shopId => this.lockShoppingItems(shopId),
         unlockShoppingItems: shopId => this.unlockShoppingItems(shopId),
+        toggleShoppingCategory: (shopId, category) => this.toggleShoppingCategory(shopId, category),
         toggleCollectedShoppingItem: (shopId, itemId) => this.toggleCollectedShoppingItem(shopId, itemId),
         completeShoppingShop: shopId => this.completeShoppingShop(shopId),
         addCatalogItemToShop: (shopId, itemId) => this.addCatalogItemToShop(shopId, itemId),
@@ -138,6 +141,11 @@ class RecipeApp {
   clearShoppingSelection(shopId) { this.saveShoppingState(clearShoppingSelection(this.state.shopping, shopId)); }
   lockShoppingItems(shopId) { this.saveShoppingState(lockShoppingItems(this.state.shopping, shopId)); }
   unlockShoppingItems(shopId) { this.saveShoppingState(unlockShoppingItems(this.state.shopping, shopId)); }
+  toggleShoppingCategory(shopId, category) {
+    const key = `${shopId}::${category}`;
+    if (this.shoppingCollapsedCategories.has(key)) this.shoppingCollapsedCategories.delete(key);
+    else this.shoppingCollapsedCategories.add(key);
+  }
   toggleCollectedShoppingItem(shopId, itemId) { this.saveShoppingState(toggleCollectedItem(this.state.shopping, shopId, itemId)); }
   completeShoppingShop(shopId) { this.state.shopping = completeShoppingShop(this.state.shopping, shopId); this.store.setShopping(this.state.shopping); this.shoppingShopId = null; this.render(); }
 

@@ -50,22 +50,55 @@
   min-width: 0;
 }
 .shopping-category-heading {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   margin: 0 0 5px;
-  padding: 4px 6px;
-  border-bottom: 1px solid rgba(148,163,184,.22);
-  color: #cbd5e1;
-  font-size: .74rem;
-  font-weight: 850;
-  letter-spacing: .035em;
+  padding: 7px 9px;
+  border: 1px solid rgba(148,163,184,.22);
+  border-radius: 9px;
+  background: #121a2a;
+  color: #f1f5f9;
+  text-align: left;
+  font-size: .96rem;
+  font-weight: 900;
+  letter-spacing: .015em;
 }
-.shopping-category-heading span:last-child {
-  color: #64748b;
-  font-size: .68rem;
-  font-weight: 700;
+.shopping-category-heading:hover {
+  background: #172033;
+  border-color: #475569;
+}
+.shopping-category-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shopping-category-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  color: #94a3b8;
+  font-size: .72rem;
+  font-weight: 750;
+}
+.shopping-category-chevron {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform .14s ease;
+}
+.shopping-category-group--collapsed .shopping-category-chevron {
+  transform: rotate(-90deg);
+}
+.shopping-category-group--collapsed .shopping-category-heading {
+  margin-bottom: 0;
 }
 .shopping-item-grid {
   display: grid;
@@ -357,16 +390,26 @@
     gap: 4px;
   }
   .screen--shopping .shopping-category-heading {
-    min-height: 18px;
+    min-height: 30px;
     margin: 0 0 2px;
-    padding: 1px 3px;
-    border-bottom-color: rgba(148,163,184,.18);
-    font-size: .61rem;
+    padding: 5px 7px;
+    border-color: rgba(148,163,184,.22);
+    border-radius: 7px;
+    font-size: .84rem;
     line-height: 1.05;
-    letter-spacing: .045em;
+    letter-spacing: .01em;
   }
-  .screen--shopping .shopping-category-heading span:last-child {
-    font-size: .55rem;
+  .screen--shopping .shopping-category-meta {
+    gap: 5px;
+    font-size: .62rem;
+  }
+  .screen--shopping .shopping-category-chevron {
+    width: 17px;
+    height: 17px;
+    font-size: .9rem;
+  }
+  .screen--shopping .shopping-category-group--collapsed .shopping-category-heading {
+    margin-bottom: 0;
   }
   .screen--shopping .shopping-item {
     min-height: 46px;

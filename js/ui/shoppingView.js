@@ -49,7 +49,15 @@ export class ShoppingView {
         const remove = removable ? `<button class="shopping-item__remove" type="button" data-remove-shopping-item="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from shopping list">✕</button>` : '';
         return `<div class="shopping-item-wrap" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(group.category)}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${remove}</div>`;
       }).join('');
-      return `<section class="shopping-category-group" data-shop-category-group data-category="${escapeHtml(group.category)}"><header class="shopping-category-heading"><span>${escapeHtml(group.category)}</span><span data-category-visible-count>${group.items.length}</span></header><div class="shopping-item-grid">${itemCards}</div></section>`;
+      const categoryKey = `${shopId}::${group.category}`;
+      const collapsed = this.context.shoppingCollapsedCategories?.has(categoryKey) || false;
+      return `<section class="shopping-category-group ${collapsed ? 'shopping-category-group--collapsed' : ''}" data-shop-category-group data-category="${escapeHtml(group.category)}">
+        <button class="shopping-category-heading" type="button" data-toggle-shopping-category="${escapeHtml(group.category)}" aria-expanded="${collapsed ? 'false' : 'true'}">
+          <span class="shopping-category-title">${escapeHtml(group.category)}</span>
+          <span class="shopping-category-meta"><span data-category-visible-count>${group.items.length}</span><span class="shopping-category-chevron" aria-hidden="true">⌄</span></span>
+        </button>
+        <div class="shopping-item-grid" data-shopping-category-content ${collapsed ? 'hidden' : ''}>${itemCards}</div>
+      </section>`;
     }).join('');
 
     const actions = locked
@@ -80,6 +88,16 @@ export class ShoppingView {
     this.root.querySelector('[data-add-shopping-item]')?.addEventListener('click', () => this.openAddItem(shopId));
     this.root.querySelector('[data-manage-shopping-items]')?.addEventListener('click', () => this.openManageItems(shopId));
     this.root.querySelectorAll('[data-remove-shopping-item]').forEach(button => button.addEventListener('click', () => this.context.actions.removeShoppingItem(shopId, button.dataset.removeShoppingItem)));
+    this.root.querySelectorAll('[data-toggle-shopping-category]').forEach(button => button.addEventListener('click', () => {
+      const category = button.dataset.toggleShoppingCategory;
+      const group = button.closest('[data-shop-category-group]');
+      const content = group?.querySelector('[data-shopping-category-content]');
+      const collapsed = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      group?.classList.toggle('shopping-category-group--collapsed', collapsed);
+      if (content) content.hidden = collapsed;
+      this.context.actions.toggleShoppingCategory(shopId, category);
+    }));
 
     const applyFilters = () => {
       const query = this.root.querySelector('[data-shop-list-search]')?.value.trim().toLowerCase() || '';
