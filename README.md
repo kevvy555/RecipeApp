@@ -2,7 +2,7 @@
 
 A lightweight, local-first groceries, recipe, weekly meal planning and shopping-list web app. It uses plain HTML/CSS/JavaScript, ES modules, separate domain/persistence/UI concerns and JSON seed data, with no framework or build dependency.
 
-## Version 2.3 features
+## Version 2.3.1 features
 
 - **Home** — Groceries, Recipes, Planner and Shopping.
 - **Groceries** — the single master catalogue for everything you buy, including food and non-food items, with live partial-match search and category/type/preferred-shop filters.
@@ -72,3 +72,5 @@ npm test
 ## GitHub Pages
 
 The project is static and can be published directly from the repository root using GitHub Pages.
+
+- Shopping excludes cooked/prepared nutrition references from shop lists, Manage Items and Add from Groceries while keeping those foods available for recipes and calorie calculations.

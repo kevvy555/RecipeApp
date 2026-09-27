@@ -86,9 +86,14 @@ function shopLink(shopId, available=true) { return { shopId, available }; }
 export function isShoppingPreparationVariant(name) {
   const normalized = String(name || '').trim().toLowerCase();
   if (normalized === 'baked beans in tomato sauce') return false;
-  return /\b(cooked|fried|prepared|baked|drained)\b/.test(normalized)
+  return /\b(cooked|fried|boiled|prepared|drained)\b/.test(normalized)
+    || /,\s*baked\b/.test(normalized)
     || normalized.includes('made with water')
     || normalized.includes('air popped');
+}
+
+export function isItemShoppingEligible(item) {
+  return !isShoppingPreparationVariant(item?.name);
 }
 
 export function applyShoppingCatalogRevision(state) {
@@ -205,18 +210,21 @@ export function normalizeItem(input, fallbackShopId='supermarket') {
 }
 
 export function itemAvailableAtShop(item, shopId) {
+  if (!isItemShoppingEligible(item)) return false;
   return item?.shops?.some(link => link.shopId === shopId && link.available !== false) || false;
 }
 
 export function availableShopIds(item) {
+  if (!isItemShoppingEligible(item)) return [];
   return (item?.shops || []).filter(link => link.available !== false).map(link => link.shopId);
 }
 
 export function associateItemWithShop(item, shopId, { available=true, makePreferred=false }={}) {
   const next = structuredClone(item);
+  const effectiveAvailable = Boolean(available) && isItemShoppingEligible(next);
   const existing = next.shops?.find(link => link.shopId === shopId);
-  if (existing) existing.available = available;
-  else (next.shops ||= []).push(shopLink(shopId, available));
+  if (existing) existing.available = effectiveAvailable;
+  else (next.shops ||= []).push(shopLink(shopId, effectiveAvailable));
   if (makePreferred || !next.preferredShopId) next.preferredShopId = shopId;
   next.updatedAt = new Date().toISOString();
   return next;

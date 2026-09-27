@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applyShoppingCatalogRevision, associateItemWithShop, buildSeedCatalog, migrateLegacyState, itemAvailableAtShop, normalizeItem, setItemShopAvailability } from '../js/domain/catalogService.js';
+import { applyShoppingCatalogRevision, associateItemWithShop, buildSeedCatalog, isItemShoppingEligible, migrateLegacyState, itemAvailableAtShop, normalizeItem, setItemShopAvailability } from '../js/domain/catalogService.js';
 
 const foodSeed = {
   Protein: [['Chicken breast, cooked', 165, '']],
@@ -109,4 +109,13 @@ test('catalog revision hides preparation variants and clears current selection w
   assert.equal(next.shopping.shops[0].current.quantities.cooked, undefined);
   assert.equal(next.shopping.shops[0].current.quantities.raw, 1);
   assert.equal(next.shopping.shops[0].frequency.cooked, 4);
+});
+
+test('shopping eligibility excludes preparation variants without excluding normal products', () => {
+  assert.equal(isItemShoppingEligible({ name: 'Chicken thigh, cooked' }), false);
+  assert.equal(isItemShoppingEligible({ name: 'Egg, whole boiled' }), false);
+  assert.equal(isItemShoppingEligible({ name: 'Sweet potato, baked' }), false);
+  assert.equal(isItemShoppingEligible({ name: 'Stock, prepared' }), false);
+  assert.equal(isItemShoppingEligible({ name: 'Baked beans in tomato sauce' }), true);
+  assert.equal(itemAvailableAtShop({ name: 'Chicken thigh, cooked', shops: [{ shopId: 'butchers', available: true }] }, 'butchers'), false);
 });

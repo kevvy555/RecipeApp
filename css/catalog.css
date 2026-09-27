@@ -75,3 +75,13 @@
     grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
   }
 }
+
+/* Locked shopping lists: flat items-to-buy view, no category UI. */
+.screen--shopping .list-filter-bar--locked {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+@media (max-width: 640px) {
+  .screen--shopping .list-filter-bar--locked {
+    grid-template-columns: 1fr !important;
+  }
+}

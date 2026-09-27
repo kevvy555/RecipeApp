@@ -1,4 +1,4 @@
-import { availableShopIds, itemAvailableAtShop } from './catalogService.js';
+import { availableShopIds, isItemShoppingEligible, itemAvailableAtShop } from './catalogService.js';
 
 function clone(value) { return structuredClone(value); }
 export function emptyCurrentList() { return { locked:false, quantities:{}, collected:{} }; }
@@ -10,7 +10,7 @@ export function lockShoppingItems(state, shopId) { return updateShop(state,shopI
 export function unlockShoppingItems(state, shopId) { return updateShop(state,shopId,shop=>{ shop.current.locked=false; return shop; }); }
 export function toggleCollectedItem(state, shopId, itemId) { return updateShop(state,shopId,shop=>{ if(shop.current.locked && Number(shop.current.quantities[itemId]||0)>0) shop.current.collected[itemId]=!shop.current.collected[itemId]; return shop; }); }
 export function completeShoppingShop(state, shopId) { return updateShop(state,shopId,shop=>{ for(const [itemId,q] of Object.entries(shop.current.quantities||{})) if(Number(q)>0) shop.frequency[itemId]=Number(shop.frequency[itemId]||0)+1; shop.current=emptyCurrentList(); return shop; }); }
-export function shopItems(items, shopId, {includeUnavailable=false}={}) { return (items||[]).filter(item => item.shops?.some(link => link.shopId===shopId && (includeUnavailable || link.available!==false))); }
+export function shopItems(items, shopId, {includeUnavailable=false}={}) { return (items||[]).filter(item => isItemShoppingEligible(item) && item.shops?.some(link => link.shopId===shopId && (includeUnavailable || link.available!==false))); }
 export function rankedShopItems(shop, items) { const freq=shop?.frequency||{}; return shopItems(items,shop?.id).sort((a,b)=>Number(freq[b.id]||0)-Number(freq[a.id]||0) || a.name.localeCompare(b.name,undefined,{sensitivity:'base'})); }
 export function selectedShopItems(shop, items) { return rankedShopItems(shop,items).filter(item=>Number(shop.current?.quantities?.[item.id]||0)>0); }
 export function selectedItemCount(shop) { return Object.values(shop?.current?.quantities||{}).filter(q=>Number(q)>0).length; }

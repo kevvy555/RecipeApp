@@ -116,3 +116,12 @@ test('category grouping preserves ranked order and groups matching items', () =>
   assert.deepEqual(groups[0].items.map(item => item.id), ['milk', 'cheese']);
   assert.deepEqual(groups[1].items.map(item => item.id), ['bread', 'rolls']);
 });
+
+test('shop item queries omit cooked nutrition references even if linked as available', () => {
+  const state = blank();
+  const items = [
+    { id: 'chicken', name: 'Chicken', category: 'Protein', shops: [{ shopId: 'shop', available: true }] },
+    { id: 'cooked', name: 'Chicken thigh, cooked', category: 'Protein', shops: [{ shopId: 'shop', available: true }] }
+  ];
+  assert.deepEqual(rankedShopItems(state.shops[0], items).map(item => item.id), ['chicken']);
+});
