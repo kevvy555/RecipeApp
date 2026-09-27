@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  addLockedShoppingItem,
   addRecipeToShopping,
   clearShoppingSelection,
   completeShoppingShop,
@@ -124,4 +125,14 @@ test('shop item queries omit cooked nutrition references even if linked as avail
     { id: 'cooked', name: 'Chicken thigh, cooked', category: 'Protein', shops: [{ shopId: 'shop', available: true }] }
   ];
   assert.deepEqual(rankedShopItems(state.shops[0], items).map(item => item.id), ['chicken']);
+});
+
+test('locked list quick add adds a missing item without unlocking the list', () => {
+  let state = blank();
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = lockShoppingItems(state, 'shop');
+  state = addLockedShoppingItem(state, 'shop', 'bread');
+  assert.equal(state.shops[0].current.locked, true);
+  assert.equal(state.shops[0].current.quantities.bread, 1);
+  assert.equal(state.shops[0].current.quantities.milk, 1);
 });

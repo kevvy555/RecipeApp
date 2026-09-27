@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applyShoppingCatalogRevision, associateItemWithShop, buildSeedCatalog, isItemShoppingEligible, migrateLegacyState, itemAvailableAtShop, normalizeItem, setItemShopAvailability } from '../js/domain/catalogService.js';
+import { applyShoppingCatalogRevision, associateItemWithShop, buildSeedCatalog, findEquivalentCatalogItem, isItemShoppingEligible, migrateLegacyState, itemAvailableAtShop, normalizeItem, setItemShopAvailability } from '../js/domain/catalogService.js';
 
 const foodSeed = {
   Protein: [['Chicken breast, cooked', 165, '']],
@@ -118,4 +118,28 @@ test('shopping eligibility excludes preparation variants without excluding norma
   assert.equal(isItemShoppingEligible({ name: 'Stock, prepared' }), false);
   assert.equal(isItemShoppingEligible({ name: 'Baked beans in tomato sauce' }), true);
   assert.equal(itemAvailableAtShop({ name: 'Chicken thigh, cooked', shops: [{ shopId: 'butchers', available: true }] }, 'butchers'), false);
+});
+
+test('catalog name matching ignores punctuation, hyphens and word order', () => {
+  const items = [{ id: 'gf', name: 'Gluten-Free Pasta' }, { id: 'jacobs', name: "Jacob's Crackers" }];
+  assert.equal(findEquivalentCatalogItem(items, 'Pasta gluten free')?.id, 'gf');
+  assert.equal(findEquivalentCatalogItem(items, 'Jacobs crackers')?.id, 'jacobs');
+});
+
+test('catalog revision adds newly introduced seed items once without duplicating equivalent local names', () => {
+  const state = {
+    items: [{ id: 'local-gf', name: 'Spaghetti Gluten-Free', shops: [{ shopId: 'supermarket', available: true }] }],
+    recipes: [],
+    planner: { weeks: {} },
+    shopping: { shops: [{ id: 'supermarket', frequency: {}, current: { locked: false, quantities: {}, collected: {} } }] }
+  };
+  const seedCatalog = {
+    items: [
+      { id: 'item-spaghetti-gluten-free', name: 'Spaghetti Gluten Free', introducedInRevision: 3, shops: [{ shopId: 'supermarket', available: true }] },
+      { id: 'item-jacobs-crackers', name: 'Jacobs Crackers', introducedInRevision: 3, shops: [{ shopId: 'supermarket', available: true }] }
+    ]
+  };
+  const next = applyShoppingCatalogRevision(state, seedCatalog);
+  assert.equal(next.items.filter(item => /spaghetti/i.test(item.name)).length, 1);
+  assert.equal(next.items.some(item => item.id === 'item-jacobs-crackers'), true);
 });

@@ -1,6 +1,6 @@
-export const APP_VERSION = '2.3.1';
+export const APP_VERSION = '2.4.0';
 export const DATA_SCHEMA_VERSION = 2;
-export const CATALOG_REVISION = 2;
+export const CATALOG_REVISION = 3;
 
 export const STORAGE_KEYS = Object.freeze({
   items: 'recipeApp.items.v2',

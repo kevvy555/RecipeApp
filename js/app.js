@@ -3,9 +3,9 @@ import { ensureCatalogData } from './data/catalogSeedLoader.js';
 import { downloadExport, readImportFile } from './persistence/dataTransfer.js';
 import { addDays, startOfWeekMonday, toIsoDate } from './core/utils.js';
 import { CATALOG_REVISION } from './core/constants.js';
-import { applyShoppingCatalogRevision, associateItemWithShop, migrateLegacyState, normalizeItem, setItemShopAvailability } from './domain/catalogService.js';
+import { applyShoppingCatalogRevision, associateItemWithShop, findEquivalentCatalogItem, isItemShoppingEligible, migrateLegacyState, normalizeItem, setItemShopAvailability } from './domain/catalogService.js';
 import { removeRecipeFromPlanner, setMeal } from './domain/plannerService.js';
-import { addRecipeToShopping, clearShoppingSelection, completeShoppingShop, incrementShoppingItem, lockShoppingItems, removeShoppingItem, toggleCollectedItem, unlockShoppingItems } from './domain/shoppingService.js';
+import { addLockedShoppingItem, addRecipeToShopping, clearShoppingSelection, completeShoppingShop, incrementShoppingItem, lockShoppingItems, removeShoppingItem, toggleCollectedItem, unlockShoppingItems } from './domain/shoppingService.js';
 import { getRoute, navigate } from './ui/router.js';
 import { renderHomeView } from './ui/homeView.js';
 import { FoodsView } from './ui/foodsView.js';
@@ -72,6 +72,8 @@ class RecipeApp {
         toggleCollectedShoppingItem: (shopId, itemId) => this.toggleCollectedShoppingItem(shopId, itemId),
         completeShoppingShop: shopId => this.completeShoppingShop(shopId),
         addCatalogItemToShop: (shopId, itemId) => this.addCatalogItemToShop(shopId, itemId),
+        addLockedShoppingItem: (shopId, itemId) => this.addLockedShoppingItem(shopId, itemId),
+        createAndAddLockedShoppingItem: (shopId, name) => this.createAndAddLockedShoppingItem(shopId, name),
         setItemShopAvailability: (itemId, shopId, available) => this.changeItemShopAvailability(itemId, shopId, available)
       }
     };
@@ -158,6 +160,44 @@ class RecipeApp {
     this.render();
   }
 
+  addLockedShoppingItem(shopId, itemId) {
+    const index = this.state.items.findIndex(item => item.id === itemId);
+    if (index < 0 || !isItemShoppingEligible(this.state.items[index])) return;
+    this.state.items[index] = associateItemWithShop(this.state.items[index], shopId, { available: true, makePreferred: true });
+    this.state.shopping = addLockedShoppingItem(this.state.shopping, shopId, itemId);
+    this.store.setItems(this.state.items);
+    this.store.setShopping(this.state.shopping);
+    this.render();
+  }
+
+  createAndAddLockedShoppingItem(shopId, name) {
+    const trimmed = String(name || '').trim();
+    if (!trimmed) return;
+    const existing = findEquivalentCatalogItem(this.state.items, trimmed);
+    if (existing) {
+      this.addLockedShoppingItem(shopId, existing.id);
+      return;
+    }
+    const item = normalizeItem({
+      name: trimmed,
+      category: 'Other',
+      isFood: true,
+      caloriesPer100g: null,
+      preferredShopId: shopId,
+      shops: [{ shopId, available: true }],
+      source: 'user'
+    }, shopId);
+    if (!isItemShoppingEligible(item)) {
+      alert('Cooked/prepared nutrition variants are not Shopping options.');
+      return;
+    }
+    this.state.items.push(item);
+    this.state.shopping = addLockedShoppingItem(this.state.shopping, shopId, item.id);
+    this.store.setItems(this.state.items);
+    this.store.setShopping(this.state.shopping);
+    this.render();
+  }
+
   changeItemShopAvailability(itemId, shopId, available) {
     const index = this.state.items.findIndex(item => item.id === itemId); if (index < 0) return;
     this.state.items[index] = setItemShopAvailability(this.state.items[index], shopId, available);
@@ -176,7 +216,7 @@ class RecipeApp {
         const imported = await readImportFile(input.files[0]);
         if (!confirm('Importing will replace all item, recipe, planner and shopping data stored on this device. Continue?')) return;
         const importedState = imported.schemaVersion === 1 ? migrateLegacyState(imported.data, this.seedCatalog) : imported.data;
-        this.store.replaceState(applyShoppingCatalogRevision(importedState));
+        this.store.replaceState(applyShoppingCatalogRevision(importedState, this.seedCatalog));
         this.store.setCatalogRevision(CATALOG_REVISION);
         this.state = this.store.loadState(); this.shoppingShopId = null; this.render(); alert('RecipeApp data imported successfully.');
       } catch (error) { alert(`Import failed: ${error.message}`); }

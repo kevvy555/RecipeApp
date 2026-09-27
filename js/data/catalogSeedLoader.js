@@ -21,10 +21,10 @@ export async function ensureCatalogData(store) {
   const seedCatalog = await loadSeedCatalog();
   if (!store.has(STORAGE_KEYS.items)) {
     const migrated = migrateLegacyState(store.loadLegacyState(), seedCatalog);
-    store.replaceState(applyShoppingCatalogRevision(migrated));
+    store.replaceState(applyShoppingCatalogRevision(migrated, seedCatalog));
     store.setCatalogRevision(CATALOG_REVISION);
   } else if (store.getCatalogRevision() < CATALOG_REVISION) {
-    store.replaceState(applyShoppingCatalogRevision(store.loadState()));
+    store.replaceState(applyShoppingCatalogRevision(store.loadState(), seedCatalog));
     store.setCatalogRevision(CATALOG_REVISION);
   }
   return seedCatalog;

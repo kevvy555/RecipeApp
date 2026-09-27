@@ -57,6 +57,27 @@ export function slugifyItemName(value) {
     .replace(/^-+|-+$/g, '') || 'item';
 }
 
+export function catalogItemNameKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .sort()
+    .join('|');
+}
+
+export function findEquivalentCatalogItem(items, name) {
+  const key = catalogItemNameKey(name);
+  if (!key) return null;
+  return (items || []).find(item => catalogItemNameKey(item.name) === key) || null;
+}
+
 function flattenFoodSeed(foodSeed) {
   let index = 0;
   return Object.entries(foodSeed || {}).flatMap(([category, rows]) => Array.isArray(rows) ? rows.map(([name, caloriesPer100g, notes='']) => {
@@ -96,7 +117,7 @@ export function isItemShoppingEligible(item) {
   return !isShoppingPreparationVariant(item?.name);
 }
 
-export function applyShoppingCatalogRevision(state) {
+export function applyShoppingCatalogRevision(state, seedCatalog = null) {
   const next = structuredClone(state || {});
   const hiddenIds = new Set();
 
@@ -108,6 +129,18 @@ export function applyShoppingCatalogRevision(state) {
     updated.updatedAt = new Date().toISOString();
     return updated;
   });
+
+  const existingIds = new Set(next.items.map(item => item.id));
+  const existingNameKeys = new Set(next.items.map(item => catalogItemNameKey(item.name)).filter(Boolean));
+  for (const seedItem of seedCatalog?.items || []) {
+    if (!seedItem.introducedInRevision) continue;
+    const key = catalogItemNameKey(seedItem.name);
+    if (existingIds.has(seedItem.id) || (key && existingNameKeys.has(key))) continue;
+    const added = structuredClone(seedItem);
+    next.items.push(added);
+    existingIds.add(added.id);
+    if (key) existingNameKeys.add(key);
+  }
 
   next.shopping = structuredClone(next.shopping || { shops: [] });
   for (const shop of next.shopping.shops || []) {
@@ -148,7 +181,8 @@ export function buildSeedCatalog(foodSeed, shoppingSeed) {
           notes: food?.notes || '',
           preferredShopId,
           shops: [shopLink(shop.id, sourceItem.available !== false)],
-          source: 'seed'
+          source: 'seed',
+          introducedInRevision: Number(sourceItem.introducedInRevision) || undefined
         };
         items.push(item);
         itemByShoppingName.set(key, item);
@@ -161,6 +195,7 @@ export function buildSeedCatalog(foodSeed, shoppingSeed) {
         if (existingLink) existingLink.available = sourceItem.available !== false;
         else item.shops.push(shopLink(shop.id, sourceItem.available !== false));
         if (sourceItem.preferredShopId) item.preferredShopId = sourceItem.preferredShopId;
+        if (sourceItem.introducedInRevision && !item.introducedInRevision) item.introducedInRevision = Number(sourceItem.introducedInRevision);
       }
       legacyShoppingItemToItemId[`${shop.id}:${sourceItem.id}`] = item.id;
     }

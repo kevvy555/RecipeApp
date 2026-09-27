@@ -85,3 +85,21 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+.catalog-picker-search-create {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+.catalog-picker-filters--create {
+  grid-template-columns: minmax(240px, 1.6fr) repeat(2, minmax(130px, .7fr));
+}
+@media (max-width: 640px) {
+  .catalog-picker-filters--create {
+    grid-template-columns: 1fr;
+  }
+  .catalog-picker-search-create {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

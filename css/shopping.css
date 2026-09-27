@@ -435,3 +435,9 @@
     min-height: 46px;
   }
 }
+
+@media (max-width: 640px) {
+  .screen--shopping .shopping-actions--locked {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}

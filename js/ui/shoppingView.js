@@ -68,7 +68,7 @@ export class ShoppingView {
       : categorySections;
 
     const actions = locked
-      ? '<div class="shopping-actions"><button class="button button--ghost" type="button" data-edit-shopping-list>Edit List</button><button class="button button--primary shopping-action" type="button" data-complete-shopping-shop>Done</button></div>'
+      ? '<div class="shopping-actions shopping-actions--locked"><button class="button button--ghost" type="button" data-add-locked-shopping-item>+ Add</button><button class="button button--ghost" type="button" data-edit-shopping-list>Edit List</button><button class="button button--primary shopping-action" type="button" data-complete-shopping-shop>Done</button></div>'
       : `<div class="shopping-actions shopping-actions--wrap"><button class="button button--ghost" type="button" data-add-shopping-item>+ Groceries</button><button class="button button--ghost" type="button" data-manage-shopping-items>Manage</button><button class="button button--ghost" type="button" data-clear-shopping-selection ${selected === 0 ? 'disabled' : ''}>Clear</button><button class="button button--primary shopping-action" type="button" data-lock-shopping-items ${selected === 0 ? 'disabled' : ''}>Lock</button></div>`;
 
     const help = locked
@@ -92,6 +92,7 @@ export class ShoppingView {
     this.root.querySelector('[data-edit-shopping-list]')?.addEventListener('click', () => this.context.actions.unlockShoppingItems(shopId));
     this.root.querySelector('[data-complete-shopping-shop]')?.addEventListener('click', () => this.context.actions.completeShoppingShop(shopId));
     this.root.querySelector('[data-add-shopping-item]')?.addEventListener('click', () => this.openAddItem(shopId));
+    this.root.querySelector('[data-add-locked-shopping-item]')?.addEventListener('click', () => this.openLockedAddItem(shopId));
     this.root.querySelector('[data-manage-shopping-items]')?.addEventListener('click', () => this.openManageItems(shopId));
     this.root.querySelectorAll('[data-remove-shopping-item]').forEach(button => button.addEventListener('click', () => this.context.actions.removeShoppingItem(shopId, button.dataset.removeShoppingItem)));
     this.root.querySelectorAll('[data-hide-shopping-option]').forEach(button => button.addEventListener('click', () => this.context.actions.setItemShopAvailability(button.dataset.hideShoppingOption, shopId, false)));
@@ -142,6 +143,25 @@ export class ShoppingView {
       if (locked) this.context.actions.toggleCollectedShoppingItem(shopId, itemId);
       else this.context.actions.incrementShoppingItem(shopId, itemId);
     }));
+  }
+
+  openLockedAddItem(shopId) {
+    const shop = this.context.state.shopping.shops.find(entry => entry.id === shopId);
+    const selectedIds = new Set(Object.entries(shop.current?.quantities || {}).filter(([, quantity]) => Number(quantity) > 0).map(([itemId]) => itemId));
+    const candidates = this.context.state.items.filter(item => isItemShoppingEligible(item) && !selectedIds.has(item.id));
+    openItemPicker({
+      items: candidates,
+      shops: this.context.state.shopping.shops,
+      title: 'Add item',
+      eyebrow: shop.name,
+      help: 'Search existing Groceries or type a new item name and tap Add.',
+      showType: false,
+      showShopFilter: false,
+      allowCreate: true,
+      createLabel: 'Add',
+      onSelect: item => this.context.actions.addLockedShoppingItem(shopId, item.id),
+      onCreate: name => this.context.actions.createAndAddLockedShoppingItem(shopId, name)
+    });
   }
 
   openAddItem(shopId) {
