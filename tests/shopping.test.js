@@ -11,6 +11,7 @@ import {
   rankedShopItems,
   removeShoppingItem,
   selectedShopItems,
+  setShoppingItemSize,
   toggleCollectedItem,
   unlockShoppingItems
 } from '../js/domain/shoppingService.js';
@@ -20,7 +21,7 @@ const items = [
   { id: 'milk', name: 'Milk', category: 'Dairy', preferredShopId: 'shop', shops: [{ shopId: 'shop', available: true }] },
   { id: 'eggs', name: 'Eggs', category: 'Eggs', preferredShopId: 'shop', shops: [{ shopId: 'shop', available: true }] }
 ];
-const blank = () => ({ shops: [{ id: 'shop', name: 'Shop', frequency: {}, current: { locked: false, quantities: {}, collected: {} } }] });
+const blank = () => ({ shops: [{ id: 'shop', name: 'Shop', frequency: {}, current: { locked: false, quantities: {}, collected: {}, sizes: {} } }] });
 
 test('shopping item taps count quantities and lock freezes selection', () => {
   let state = blank();
@@ -44,7 +45,7 @@ test('locked items can be collected and Done records frequency once per item', (
   assert.equal(state.shops[0].current.collected.milk, true);
   state = completeShoppingShop(state, 'shop');
   assert.equal(state.shops[0].frequency.milk, 1);
-  assert.deepEqual(state.shops[0].current, { locked: false, quantities: {}, collected: {} });
+  assert.deepEqual(state.shops[0].current, { locked: false, quantities: {}, collected: {}, sizes: {} });
 });
 
 test('frequency ranking uses shared item catalogue then alphabetical order', () => {
@@ -58,7 +59,7 @@ test('clear selection resets unlocked list without changing frequency', () => {
   state.shops[0].frequency = { milk: 3 };
   state = incrementShoppingItem(state, 'shop', 'milk');
   state = clearShoppingSelection(state, 'shop');
-  assert.deepEqual(state.shops[0].current, { locked: false, quantities: {}, collected: {} });
+  assert.deepEqual(state.shops[0].current, { locked: false, quantities: {}, collected: {}, sizes: {} });
   assert.equal(state.shops[0].frequency.milk, 3);
 });
 
@@ -135,4 +136,36 @@ test('locked list quick add adds a missing item without unlocking the list', () 
   assert.equal(state.shops[0].current.locked, true);
   assert.equal(state.shops[0].current.quantities.bread, 1);
   assert.equal(state.shops[0].current.quantities.milk, 1);
+});
+
+test('locked shopping item can store, change and clear a size without changing count', () => {
+  let state = blank();
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = lockShoppingItems(state, 'shop');
+  state = setShoppingItemSize(state, 'shop', 'milk', '2L');
+  assert.equal(state.shops[0].current.sizes.milk, '2L');
+  assert.equal(state.shops[0].current.quantities.milk, 1);
+  state = setShoppingItemSize(state, 'shop', 'milk', '6 pack');
+  assert.equal(state.shops[0].current.sizes.milk, '6 pack');
+  state = setShoppingItemSize(state, 'shop', 'milk', '');
+  assert.equal(state.shops[0].current.sizes.milk, undefined);
+});
+
+test('item size cannot be set until the item is selected and list is locked', () => {
+  let state = blank();
+  state = setShoppingItemSize(state, 'shop', 'milk', '1L');
+  assert.equal(state.shops[0].current.sizes.milk, undefined);
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = setShoppingItemSize(state, 'shop', 'milk', '1L');
+  assert.equal(state.shops[0].current.sizes.milk, undefined);
+});
+
+test('removing an unlocked item removes its saved size', () => {
+  let state = blank();
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = lockShoppingItems(state, 'shop');
+  state = setShoppingItemSize(state, 'shop', 'milk', '500ml');
+  state = unlockShoppingItems(state, 'shop');
+  state = removeShoppingItem(state, 'shop', 'milk');
+  assert.equal(state.shops[0].current.sizes.milk, undefined);
 });

@@ -5,7 +5,7 @@ import { addDays, startOfWeekMonday, toIsoDate } from './core/utils.js';
 import { CATALOG_REVISION } from './core/constants.js';
 import { applyShoppingCatalogRevision, associateItemWithShop, findEquivalentCatalogItem, isItemShoppingEligible, migrateLegacyState, normalizeItem, setItemShopAvailability } from './domain/catalogService.js';
 import { removeRecipeFromPlanner, setMeal } from './domain/plannerService.js';
-import { addLockedShoppingItem, addRecipeToShopping, clearShoppingSelection, completeShoppingShop, incrementShoppingItem, lockShoppingItems, removeShoppingItem, toggleCollectedItem, unlockShoppingItems } from './domain/shoppingService.js';
+import { addLockedShoppingItem, addRecipeToShopping, clearShoppingSelection, completeShoppingShop, incrementShoppingItem, lockShoppingItems, removeShoppingItem, setShoppingItemSize, toggleCollectedItem, unlockShoppingItems } from './domain/shoppingService.js';
 import { getRoute, navigate } from './ui/router.js';
 import { renderHomeView } from './ui/homeView.js';
 import { FoodsView } from './ui/foodsView.js';
@@ -74,6 +74,7 @@ class RecipeApp {
         addCatalogItemToShop: (shopId, itemId) => this.addCatalogItemToShop(shopId, itemId),
         addLockedShoppingItem: (shopId, itemId) => this.addLockedShoppingItem(shopId, itemId),
         createAndAddLockedShoppingItem: (shopId, name) => this.createAndAddLockedShoppingItem(shopId, name),
+        setShoppingItemSize: (shopId, itemId, size) => this.setShoppingItemSize(shopId, itemId, size),
         setItemShopAvailability: (itemId, shopId, available) => this.changeItemShopAvailability(itemId, shopId, available)
       }
     };
@@ -103,6 +104,7 @@ class RecipeApp {
       delete shop.frequency?.[id];
       delete shop.current?.quantities?.[id];
       delete shop.current?.collected?.[id];
+      delete shop.current?.sizes?.[id];
     }
     this.store.setItems(this.state.items);
     this.store.setShopping(this.state.shopping);
@@ -150,6 +152,7 @@ class RecipeApp {
     else this.shoppingCollapsedCategories.add(key);
   }
   toggleCollectedShoppingItem(shopId, itemId) { this.saveShoppingState(toggleCollectedItem(this.state.shopping, shopId, itemId)); }
+  setShoppingItemSize(shopId, itemId, size) { this.saveShoppingState(setShoppingItemSize(this.state.shopping, shopId, itemId, size)); }
   completeShoppingShop(shopId) { this.state.shopping = completeShoppingShop(this.state.shopping, shopId); this.store.setShopping(this.state.shopping); this.shoppingShopId = null; this.render(); }
 
   addCatalogItemToShop(shopId, itemId) {
@@ -203,7 +206,7 @@ class RecipeApp {
     this.state.items[index] = setItemShopAvailability(this.state.items[index], shopId, available);
     if (!available) {
       const shop = this.state.shopping.shops?.find(entry => entry.id === shopId);
-      if (shop) { delete shop.current?.quantities?.[itemId]; delete shop.current?.collected?.[itemId]; }
+      if (shop) { delete shop.current?.quantities?.[itemId]; delete shop.current?.collected?.[itemId]; delete shop.current?.sizes?.[itemId]; }
     }
     this.store.setItems(this.state.items); this.store.setShopping(this.state.shopping); this.render();
   }

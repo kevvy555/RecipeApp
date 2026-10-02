@@ -147,6 +147,7 @@ export function applyShoppingCatalogRevision(state, seedCatalog = null) {
     for (const itemId of hiddenIds) {
       delete shop.current?.quantities?.[itemId];
       delete shop.current?.collected?.[itemId];
+      delete shop.current?.sizes?.[itemId];
     }
   }
   return next;
@@ -161,7 +162,7 @@ export function buildSeedCatalog(foodSeed, shoppingSeed) {
   const itemByShoppingName = new Map();
   const legacySeedIdToItemId = {};
   const legacyShoppingItemToItemId = {};
-  const shops = (shoppingSeed?.shops || []).map(shop => ({ id:shop.id, name:shop.name, frequency:{}, current:{locked:false,quantities:{},collected:{}} }));
+  const shops = (shoppingSeed?.shops || []).map(shop => ({ id:shop.id, name:shop.name, frequency:{}, current:{locked:false,quantities:{},collected:{},sizes:{}} }));
 
   for (const shop of shoppingSeed?.shops || []) {
     for (const sourceItem of shop.items || []) {
@@ -304,7 +305,7 @@ export function migrateLegacyState(legacyState, seedCatalog) {
   for (const legacyShop of legacyState?.shopping?.shops || []) {
     let shop = shopById.get(legacyShop.id);
     if (!shop) {
-      shop = { id:legacyShop.id, name:legacyShop.name || legacyShop.id, frequency:{}, current:{locked:false,quantities:{},collected:{}} };
+      shop = { id:legacyShop.id, name:legacyShop.name || legacyShop.id, frequency:{}, current:{locked:false,quantities:{},collected:{},sizes:{}} };
       shopping.shops.push(shop);
       shopById.set(shop.id, shop);
     }
@@ -325,7 +326,8 @@ export function migrateLegacyState(legacyState, seedCatalog) {
     shop.current = {
       locked:Boolean(legacyShop.current?.locked),
       quantities:mapKeys(legacyShop.current?.quantities),
-      collected:mapKeys(legacyShop.current?.collected)
+      collected:mapKeys(legacyShop.current?.collected),
+      sizes:mapKeys(legacyShop.current?.sizes)
     };
   }
 

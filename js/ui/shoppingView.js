@@ -38,16 +38,18 @@ export class ShoppingView {
 
     const renderItemCard = (item, category = item.category || 'Other') => {
       const quantity = Number(shop.current?.quantities?.[item.id] || 0);
+      const size = String(shop.current?.sizes?.[item.id] || '').trim();
       const collected = locked && Boolean(shop.current?.collected?.[item.id]);
       const removable = !locked && quantity > 0;
       const hideable = !locked && quantity === 0;
       const classes = ['shopping-item', quantity > 0 ? 'shopping-item--selected' : '', locked ? 'shopping-item--locked' : '', collected ? 'shopping-item--collected' : '', removable ? 'shopping-item--removable' : '', hideable ? 'shopping-item--hideable' : ''].filter(Boolean).join(' ');
       const action = locked ? 'data-toggle-collected-shopping-item' : 'data-increment-shopping-item';
       const searchText = `${item.name} ${category} ${item.notes || ''}`.toLowerCase();
-      const main = `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name">${escapeHtml(item.name)}</span>${quantity > 0 ? `<span class="shopping-item__quantity">${quantity}×</span>` : ''}${collected ? '<span class="shopping-item__check">✓</span>' : ''}</button>`;
+      const main = `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name-row"><span class="shopping-item__name">${escapeHtml(item.name)}</span>${size ? `<span class="shopping-item__size-label">${escapeHtml(size)}</span>` : ''}</span>${quantity > 0 ? `<span class="shopping-item__quantity">${quantity}×</span>` : ''}${collected ? '<span class="shopping-item__check">✓</span>' : ''}</button>`;
+      const sizeButton = locked ? `<button class="shopping-item__size-button" type="button" data-shopping-item-size="${escapeHtml(item.id)}" aria-label="Set size for ${escapeHtml(item.name)}">${size ? 'Size' : '+ Size'}</button>` : '';
       const remove = removable ? `<button class="shopping-item__remove" type="button" data-remove-shopping-item="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from this shopping trip">✕</button>` : '';
       const hide = hideable ? `<button class="shopping-item__hide" type="button" data-hide-shopping-option="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from this shop's options">✕</button>` : '';
-      return `<div class="shopping-item-wrap" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(category)}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${remove}${hide}</div>`;
+      return `<div class="shopping-item-wrap ${locked ? 'shopping-item-wrap--locked' : ''}" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(category)}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${sizeButton}${remove}${hide}</div>`;
     };
 
     const categoryGroups = groupItemsByCategory(items);
@@ -94,6 +96,7 @@ export class ShoppingView {
     this.root.querySelector('[data-add-shopping-item]')?.addEventListener('click', () => this.openAddItem(shopId));
     this.root.querySelector('[data-add-locked-shopping-item]')?.addEventListener('click', () => this.openLockedAddItem(shopId));
     this.root.querySelector('[data-print-shopping-list]')?.addEventListener('click', () => window.print());
+    this.root.querySelectorAll('[data-shopping-item-size]').forEach(button => button.addEventListener('click', () => this.openItemSize(shopId, button.dataset.shoppingItemSize)));
     this.root.querySelector('[data-manage-shopping-items]')?.addEventListener('click', () => this.openManageItems(shopId));
     this.root.querySelectorAll('[data-remove-shopping-item]').forEach(button => button.addEventListener('click', () => this.context.actions.removeShoppingItem(shopId, button.dataset.removeShoppingItem)));
     this.root.querySelectorAll('[data-hide-shopping-option]').forEach(button => button.addEventListener('click', () => this.context.actions.setItemShopAvailability(button.dataset.hideShoppingOption, shopId, false)));
@@ -144,6 +147,43 @@ export class ShoppingView {
       if (locked) this.context.actions.toggleCollectedShoppingItem(shopId, itemId);
       else this.context.actions.incrementShoppingItem(shopId, itemId);
     }));
+  }
+
+  openItemSize(shopId, itemId) {
+    const shop = this.context.state.shopping.shops.find(entry => entry.id === shopId);
+    const item = this.context.state.items.find(entry => entry.id === itemId);
+    if (!shop || !item || !shop.current?.locked) return;
+
+    const current = String(shop.current?.sizes?.[itemId] || '');
+    const volumeSizes = ['250ml', '330ml', '500ml', '750ml', '1L', '1.5L', '2L'];
+    const weightSizes = ['100g', '250g', '500g', '750g', '1kg', '1.5kg', '2kg'];
+    const preset = value => `<button class="shopping-size-preset ${current === value ? 'shopping-size-preset--selected' : ''}" type="button" data-size-preset="${escapeHtml(value)}">${escapeHtml(value)}</button>`;
+    const { dialog, close } = openDialog(`<div class="dialog__panel"><header class="dialog__header"><div><p class="eyebrow">${escapeHtml(shop.name)}</p><h2>${escapeHtml(item.name)}</h2></div><button type="button" class="icon-button" data-dialog-close>✕</button></header><div class="shopping-size-dialog"><section><h3>Drink size</h3><div class="shopping-size-presets">${volumeSizes.map(preset).join('')}</div></section><section><h3>Food weight</h3><div class="shopping-size-presets">${weightSizes.map(preset).join('')}</div></section><label class="shopping-size-custom"><span>Any size</span><input data-size-custom type="text" maxlength="40" placeholder="e.g. 6 pack, Large, 2 × 750ml" value="${escapeHtml(current)}"></label></div><footer class="dialog__footer"><button type="button" class="button button--ghost" data-clear-size>Clear</button><button type="button" class="button button--primary" data-save-size>Add</button></footer></div>`);
+
+    let selected = current;
+    const input = dialog.querySelector('[data-size-custom]');
+    const selectPreset = value => {
+      selected = value;
+      input.value = value;
+      dialog.querySelectorAll('[data-size-preset]').forEach(button => button.classList.toggle('shopping-size-preset--selected', button.dataset.sizePreset === value));
+    };
+    dialog.querySelectorAll('[data-size-preset]').forEach(button => button.addEventListener('click', () => selectPreset(button.dataset.sizePreset)));
+    input.addEventListener('input', () => {
+      selected = input.value.trim();
+      dialog.querySelectorAll('[data-size-preset]').forEach(button => button.classList.toggle('shopping-size-preset--selected', button.dataset.sizePreset === selected));
+    });
+    dialog.querySelector('[data-save-size]').addEventListener('click', () => {
+      const value = input.value.trim() || selected;
+      if (!value) { input.focus(); return; }
+      this.context.actions.setShoppingItemSize(shopId, itemId, value);
+      close();
+    });
+    dialog.querySelector('[data-clear-size]').addEventListener('click', () => {
+      this.context.actions.setShoppingItemSize(shopId, itemId, '');
+      close();
+    });
+    input.focus();
+    input.select();
   }
 
   openLockedAddItem(shopId) {
