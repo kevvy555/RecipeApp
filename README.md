@@ -2,7 +2,7 @@
 
 A lightweight, local-first groceries, recipe, weekly meal planning and shopping-list web app. It uses plain HTML/CSS/JavaScript, ES modules, separate domain/persistence/UI concerns and JSON seed data, with no framework or build dependency.
 
-## Version 2.7.0 features
+## Version 2.7.1 features
 
 - **Home** — Groceries, Recipes, Planner and Shopping.
 - **Groceries** — the single master catalogue for everything you buy, including food and non-food items, with live partial-match search and category/type/preferred-shop filters.
@@ -79,3 +79,5 @@ Locked shopping items can store an optional size such as `500g`, `2L`, `6 pack` 
 
 
 Locked-list layout is now single-mode: three columns, 44px touch-height tiles, item names only on screen, collapsed search, and no Import/Export while actively shopping. The previous Alt Layout experiment has been removed.
+
+Preparation cards now use a dedicated right-side control rail so remove and Size never overlap the text or quantity. Both preparation and locked views show `Name ×N` on the first line with the chosen size underneath. Locked remains a dense three-column checklist and long names truncate with an ellipsis.

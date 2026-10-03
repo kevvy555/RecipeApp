@@ -47,8 +47,10 @@ export class ShoppingView {
       const searchText = `${item.name} ${category} ${item.notes || ''}`.toLowerCase();
 
       const main = locked
-        ? `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}" title="${escapeHtml(item.name)}"><span class="shopping-item__name shopping-item__name--locked">${escapeHtml(item.name)}</span><span class="shopping-item__print-meta">${quantity > 1 ? `${quantity}×` : ''}${quantity > 1 && size ? ' · ' : ''}${size ? escapeHtml(size) : ''}</span></button>`
-        : `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name-row"><span class="shopping-item__name">${escapeHtml(item.name)}</span>${size ? `<span class="shopping-item__size-label">${escapeHtml(size)}</span>` : ''}</span>${quantity > 0 ? `<span class="shopping-item__quantity">${quantity}×</span>` : ''}</button>`;
+        ? `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}" title="${escapeHtml(item.name)}"><span class="shopping-item__locked-content"><span class="shopping-item__locked-line"><span class="shopping-item__name shopping-item__name--locked">${escapeHtml(item.name)}</span><span class="shopping-item__locked-amount">×${quantity}</span></span>${size ? `<span class="shopping-item__locked-size">${escapeHtml(size)}</span>` : ''}</span></button>`
+        : quantity > 0
+          ? `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__prepared-content"><span class="shopping-item__prepared-line"><span class="shopping-item__name">${escapeHtml(item.name)}</span><span class="shopping-item__prepared-amount">×${quantity}</span></span>${size ? `<span class="shopping-item__prepared-size">${escapeHtml(size)}</span>` : ''}</span></button>`
+          : `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name">${escapeHtml(item.name)}</span></button>`;
 
       const sizeButton = !locked && quantity > 0
         ? `<button class="shopping-item__size-button shopping-item__size-button--prepared" type="button" data-shopping-item-size="${escapeHtml(item.id)}" aria-label="Set size for ${escapeHtml(item.name)}">${size ? 'Size' : '+ Size'}</button>`
