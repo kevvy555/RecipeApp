@@ -141,7 +141,10 @@ class RecipeApp {
   saveShoppingState(nextState) { this.state.shopping = nextState; this.store.setShopping(this.state.shopping); this.render(); }
   openShoppingShop(shopId) { this.shoppingShopId = shopId; this.render(); }
   closeShoppingShop() { this.shoppingShopId = null; this.render(); }
-  incrementShoppingItem(shopId, itemId) { this.saveShoppingState(incrementShoppingItem(this.state.shopping, shopId, itemId)); }
+  incrementShoppingItem(shopId, itemId) {
+    const item = this.state.items.find(entry => entry.id === itemId);
+    this.saveShoppingState(incrementShoppingItem(this.state.shopping, shopId, itemId, item?.defaultShoppingSize));
+  }
   removeShoppingItem(shopId, itemId) { this.saveShoppingState(removeShoppingItem(this.state.shopping, shopId, itemId)); }
   clearShoppingSelection(shopId) { this.saveShoppingState(clearShoppingSelection(this.state.shopping, shopId)); }
   lockShoppingItems(shopId) { this.saveShoppingState(lockShoppingItems(this.state.shopping, shopId)); }
@@ -152,7 +155,15 @@ class RecipeApp {
     else this.shoppingCollapsedCategories.add(key);
   }
   toggleCollectedShoppingItem(shopId, itemId) { this.saveShoppingState(toggleCollectedItem(this.state.shopping, shopId, itemId)); }
-  setShoppingItemSize(shopId, itemId, size) { this.saveShoppingState(setShoppingItemSize(this.state.shopping, shopId, itemId, size)); }
+  setShoppingItemSize(shopId, itemId, size) {
+    const value = String(size || '').trim().slice(0, 40);
+    const index = this.state.items.findIndex(item => item.id === itemId);
+    if (index >= 0) {
+      this.state.items[index] = { ...this.state.items[index], defaultShoppingSize: value, updatedAt: new Date().toISOString() };
+      this.store.setItems(this.state.items);
+    }
+    this.saveShoppingState(setShoppingItemSize(this.state.shopping, shopId, itemId, value));
+  }
   completeShoppingShop(shopId) { this.state.shopping = completeShoppingShop(this.state.shopping, shopId); this.store.setShopping(this.state.shopping); this.shoppingShopId = null; this.render(); }
 
   addCatalogItemToShop(shopId, itemId) {
@@ -167,7 +178,7 @@ class RecipeApp {
     const index = this.state.items.findIndex(item => item.id === itemId);
     if (index < 0 || !isItemShoppingEligible(this.state.items[index])) return;
     this.state.items[index] = associateItemWithShop(this.state.items[index], shopId, { available: true, makePreferred: true });
-    this.state.shopping = addLockedShoppingItem(this.state.shopping, shopId, itemId);
+    this.state.shopping = addLockedShoppingItem(this.state.shopping, shopId, itemId, this.state.items[index].defaultShoppingSize);
     this.store.setItems(this.state.items);
     this.store.setShopping(this.state.shopping);
     this.render();

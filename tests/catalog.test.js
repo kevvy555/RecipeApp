@@ -143,3 +143,8 @@ test('catalog revision adds newly introduced seed items once without duplicating
   assert.equal(next.items.filter(item => /spaghetti/i.test(item.name)).length, 1);
   assert.equal(next.items.some(item => item.id === 'item-jacobs-crackers'), true);
 });
+
+test('normalizing an item preserves its remembered shopping size', () => {
+  const item = normalizeItem({ name: 'Milk', defaultShoppingSize: '2L', preferredShopId: 'supermarket' });
+  assert.equal(item.defaultShoppingSize, '2L');
+});

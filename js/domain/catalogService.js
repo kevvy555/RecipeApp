@@ -237,6 +237,7 @@ export function normalizeItem(input, fallbackShopId='supermarket') {
     isFood,
     caloriesPer100g: !isFood || input.caloriesPer100g === '' || input.caloriesPer100g == null ? null : Number(input.caloriesPer100g),
     notes: String(input.notes || ''),
+    defaultShoppingSize: String(input.defaultShoppingSize || '').trim().slice(0,40),
     preferredShopId,
     shops,
     source: input.source || 'user',

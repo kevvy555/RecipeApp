@@ -2,7 +2,7 @@
 
 A lightweight, local-first groceries, recipe, weekly meal planning and shopping-list web app. It uses plain HTML/CSS/JavaScript, ES modules, separate domain/persistence/UI concerns and JSON seed data, with no framework or build dependency.
 
-## Version 2.5.0 features
+## Version 2.5.1 features
 
 - **Home** — Groceries, Recipes, Planner and Shopping.
 - **Groceries** — the single master catalogue for everything you buy, including food and non-food items, with live partial-match search and category/type/preferred-shop filters.
@@ -75,4 +75,4 @@ The project is static and can be published directly from the repository root usi
 
 - Shopping excludes cooked/prepared nutrition references from shop lists, Manage Items and Add from Groceries while keeping those foods available for recipes and calorie calculations.
 
-Locked shopping items can store an optional size such as `500g`, `2L`, `6 pack` or any custom text. This is stored with the current shopping list and is included on printed lists.
+Locked shopping items can store an optional size such as `500g`, `2L`, `6 pack` or any custom text. Presets save immediately; custom sizes use the Add button. The last chosen size is remembered on the Grocery item and automatically restored when that item is added to a future shopping list. Size is shown beneath the item name and included on printed lists.

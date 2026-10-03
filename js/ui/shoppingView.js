@@ -157,23 +157,18 @@ export class ShoppingView {
     const current = String(shop.current?.sizes?.[itemId] || '');
     const volumeSizes = ['250ml', '330ml', '500ml', '750ml', '1L', '1.5L', '2L'];
     const weightSizes = ['100g', '250g', '500g', '750g', '1kg', '1.5kg', '2kg'];
+    const allPresets = [...volumeSizes, ...weightSizes];
+    const customValue = current && !allPresets.includes(current) ? current : '';
     const preset = value => `<button class="shopping-size-preset ${current === value ? 'shopping-size-preset--selected' : ''}" type="button" data-size-preset="${escapeHtml(value)}">${escapeHtml(value)}</button>`;
-    const { dialog, close } = openDialog(`<div class="dialog__panel"><header class="dialog__header"><div><p class="eyebrow">${escapeHtml(shop.name)}</p><h2>${escapeHtml(item.name)}</h2></div><button type="button" class="icon-button" data-dialog-close>✕</button></header><div class="shopping-size-dialog"><section><h3>Drink size</h3><div class="shopping-size-presets">${volumeSizes.map(preset).join('')}</div></section><section><h3>Food weight</h3><div class="shopping-size-presets">${weightSizes.map(preset).join('')}</div></section><label class="shopping-size-custom"><span>Any size</span><input data-size-custom type="text" maxlength="40" placeholder="e.g. 6 pack, Large, 2 × 750ml" value="${escapeHtml(current)}"></label></div><footer class="dialog__footer"><button type="button" class="button button--ghost" data-clear-size>Clear</button><button type="button" class="button button--primary" data-save-size>Add</button></footer></div>`);
+    const { dialog, close } = openDialog(`<div class="dialog__panel"><header class="dialog__header"><div><p class="eyebrow">${escapeHtml(shop.name)}</p><h2>${escapeHtml(item.name)}</h2></div><button type="button" class="icon-button" data-dialog-close>✕</button></header><div class="shopping-size-dialog"><section><h3>Drink size</h3><div class="shopping-size-presets">${volumeSizes.map(preset).join('')}</div></section><section><h3>Food weight</h3><div class="shopping-size-presets">${weightSizes.map(preset).join('')}</div></section><label class="shopping-size-custom"><span>Any size</span><div class="shopping-size-custom-row"><input data-size-custom type="text" maxlength="40" placeholder="e.g. 6 pack, Large, 2 × 750ml" value="${escapeHtml(customValue)}"><button type="button" class="button button--primary" data-save-size>Add</button></div></label></div><footer class="dialog__footer"><button type="button" class="button button--ghost" data-clear-size>Clear size</button><button type="button" class="button button--ghost" data-dialog-close>Cancel</button></footer></div>`);
 
-    let selected = current;
     const input = dialog.querySelector('[data-size-custom]');
-    const selectPreset = value => {
-      selected = value;
-      input.value = value;
-      dialog.querySelectorAll('[data-size-preset]').forEach(button => button.classList.toggle('shopping-size-preset--selected', button.dataset.sizePreset === value));
-    };
-    dialog.querySelectorAll('[data-size-preset]').forEach(button => button.addEventListener('click', () => selectPreset(button.dataset.sizePreset)));
-    input.addEventListener('input', () => {
-      selected = input.value.trim();
-      dialog.querySelectorAll('[data-size-preset]').forEach(button => button.classList.toggle('shopping-size-preset--selected', button.dataset.sizePreset === selected));
-    });
+    dialog.querySelectorAll('[data-size-preset]').forEach(button => button.addEventListener('click', () => {
+      this.context.actions.setShoppingItemSize(shopId, itemId, button.dataset.sizePreset);
+      close();
+    }));
     dialog.querySelector('[data-save-size]').addEventListener('click', () => {
-      const value = input.value.trim() || selected;
+      const value = input.value.trim();
       if (!value) { input.focus(); return; }
       this.context.actions.setShoppingItemSize(shopId, itemId, value);
       close();
@@ -182,8 +177,6 @@ export class ShoppingView {
       this.context.actions.setShoppingItemSize(shopId, itemId, '');
       close();
     });
-    input.focus();
-    input.select();
   }
 
   openLockedAddItem(shopId) {

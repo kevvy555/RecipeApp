@@ -169,3 +169,29 @@ test('removing an unlocked item removes its saved size', () => {
   state = removeShoppingItem(state, 'shop', 'milk');
   assert.equal(state.shops[0].current.sizes.milk, undefined);
 });
+
+test('remembered default size is restored when an item is added to a new unlocked list', () => {
+  let state = blank();
+  state = incrementShoppingItem(state, 'shop', 'milk', '2L');
+  assert.equal(state.shops[0].current.sizes.milk, '2L');
+  assert.equal(state.shops[0].current.quantities.milk, 1);
+});
+
+test('remembered default size is restored when quick-adding to a locked list', () => {
+  let state = blank();
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = lockShoppingItems(state, 'shop');
+  state = addLockedShoppingItem(state, 'shop', 'bread', '500g');
+  assert.equal(state.shops[0].current.sizes.bread, '500g');
+  assert.equal(state.shops[0].current.locked, true);
+});
+
+test('existing current size is not overwritten by a remembered default', () => {
+  let state = blank();
+  state = incrementShoppingItem(state, 'shop', 'milk');
+  state = lockShoppingItems(state, 'shop');
+  state = setShoppingItemSize(state, 'shop', 'milk', '1L');
+  state = unlockShoppingItems(state, 'shop');
+  state = incrementShoppingItem(state, 'shop', 'milk', '2L');
+  assert.equal(state.shops[0].current.sizes.milk, '1L');
+});
