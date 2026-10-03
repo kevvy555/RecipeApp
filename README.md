@@ -2,7 +2,7 @@
 
 A lightweight, local-first groceries, recipe, weekly meal planning and shopping-list web app. It uses plain HTML/CSS/JavaScript, ES modules, separate domain/persistence/UI concerns and JSON seed data, with no framework or build dependency.
 
-## Version 2.6.1 features
+## Version 2.7.0 features
 
 - **Home** — Groceries, Recipes, Planner and Shopping.
 - **Groceries** — the single master catalogue for everything you buy, including food and non-food items, with live partial-match search and category/type/preferred-shop filters.
@@ -13,7 +13,7 @@ A lightweight, local-first groceries, recipe, weekly meal planning and shopping-
 - **Recipes** — ingredients reference shared food items, use weights, calculate known calories, and support step-by-step instructions. Ingredient selection uses live partial-match search with category and preferred-shop filters.
 - **Recipe → Shopping** — add a recipe's unique ingredients to their preferred shops with one action.
 - **Planner** — Monday–Sunday Breakfast/Lunch/Dinner planner using saved recipes or custom meals.
-- **Shopping** — two-column shop selection, live partial-match search/filtering, quantity taps, optional per-item **Size/Amount** on locked lists, red/yellow remove controls, Lock Items, **+ Add**, **Print**, **Edit List**, collected state, Done/reset and purchase-frequency ranking. Locked lists also offer an **Alt Layout** compact preview that can be toggled back to Standard at any time.
+- **Shopping** — preparation chooses each item's count and optional remembered Size/Amount; locking switches to a dense three-column checklist showing only item names. Long locked names truncate with an ellipsis, the whole tile is the collect target, and Print still includes prepared count/size.
 - **Availability** — an item can be marked unavailable/restored independently for each shop without losing frequency history.
 - **Local-first persistence** — all data is stored in browser localStorage.
 - **Import/export** — complete JSON backup/restore.
@@ -77,6 +77,5 @@ The project is static and can be published directly from the repository root usi
 
 Locked shopping items can store an optional size such as `500g`, `2L`, `6 pack` or any custom text. Presets save immediately; custom sizes use the Add button. The last chosen size is remembered on the Grocery item and automatically restored when that item is added to a future shopping list. Size is shown beneath the item name and included on printed lists.
 
-The compact locked-list preview is a device-local UI preference. It hides low-value Import/Export controls while shopping, collapses search behind a button, and uses 56px ticket-style rows with a full-height right-hand Size touch rail. Standard layout remains available unchanged.
 
-Compact Preview v2 uses a zero-waste 48px split-row layout: the entire left side is the collect target and the entire 44px right rail is the Size target, with quantity status drawn inside that rail. Compact header/action wrappers are flattened to remove decorative padding while preserving finger-sized controls.
+Locked-list layout is now single-mode: three columns, 44px touch-height tiles, item names only on screen, collapsed search, and no Import/Export while actively shopping. The previous Alt Layout experiment has been removed.

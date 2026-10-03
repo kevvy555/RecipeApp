@@ -809,419 +809,228 @@
   }
 }
 
-/* v2.6.0 compact locked-list preview. Standard layout remains unchanged. */
-.shopping-item__compact-check {
+/* v2.7.0: preparation owns count/size; locked view is a dense 3-column checklist. */
+.shopping-item__print-meta {
   display: none;
 }
 
-@media screen {
-  .screen--shopping-compact .app-bar {
-    min-height: 54px;
-    grid-template-columns: 38px minmax(0, 1fr) auto;
-    gap: 7px;
-    padding: 6px 8px;
-  }
-  .screen--shopping-compact .app-bar .icon-button {
-    width: 38px;
-    height: 38px;
-  }
-  .screen--shopping-compact .app-bar h1 {
-    font-size: 1.08rem;
-    line-height: 1.05;
-  }
-  .screen--shopping-compact .app-bar__subtitle {
-    margin-top: 1px;
-    font-size: .68rem;
-  }
-  .screen--shopping-compact .app-bar__actions {
-    grid-column: auto;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .screen--shopping-compact .shopping-layout-toggle {
-    width: auto !important;
-    min-height: 34px;
-    padding: 5px 8px;
-    font-size: .68rem;
-    white-space: nowrap;
-  }
-
-  .screen--shopping-compact .screen__content {
-    padding: 4px 5px 8px;
-  }
-  .screen--shopping-compact .stack--lg {
-    gap: 4px;
-  }
-  .screen--shopping-compact .shopping-list-header {
-    padding: 4px;
-    border-radius: 10px;
-    box-shadow: none;
-  }
-  .screen--shopping-compact .shopping-list-header > div:first-child {
-    display: none;
-  }
-  .screen--shopping-compact .shopping-actions--locked {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) 42px !important;
-    gap: 4px;
-  }
-  .screen--shopping-compact .shopping-actions--locked .button {
-    min-width: 0;
-    min-height: 38px;
-    padding: 6px 5px;
-    border-radius: 8px;
-    font-size: .72rem;
-  }
-  .screen--shopping-compact .shopping-search-toggle {
-    width: 42px !important;
-    padding: 0 !important;
-    font-size: 1.25rem !important;
-    line-height: 1;
-  }
-
-  .screen--shopping-compact .list-filter-bar--compact {
-    grid-template-columns: minmax(0, 1fr) auto !important;
-    gap: 4px;
-    padding: 4px;
-    border-radius: 9px;
-    box-shadow: none;
-  }
-  .screen--shopping-compact .list-filter-bar--compact input {
-    min-height: 38px;
-    padding: 7px 9px;
-    border-radius: 7px;
-    font-size: .86rem;
-  }
-  .screen--shopping-compact .list-filter-bar--compact [data-shop-filter-count] {
-    display: none;
-  }
-
-  .screen--shopping-compact .shopping-category-list {
-    gap: 3px;
-  }
-  .screen--shopping-compact .shopping-item-grid--locked-flat {
-    gap: 3px 4px;
-  }
-  .screen--shopping-compact .shopping-item-wrap--locked {
-    min-height: 56px;
-  }
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item--locked {
-    min-height: 56px;
-    height: 56px;
-    padding: 5px 50px 5px 7px;
-    border-radius: 9px;
-    gap: 2px;
-  }
-  .screen--shopping-compact .shopping-item__name-row {
-    max-width: 100%;
-    gap: 1px;
-  }
-  .screen--shopping-compact .shopping-item__name {
-    max-width: 100%;
-    font-size: .78rem;
-    line-height: 1.08;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-  .screen--shopping-compact .shopping-item__size-label {
-    color: #bfdbfe;
-    font-size: .58rem;
-    line-height: 1;
-  }
-
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__quantity {
-    z-index: 2;
-    top: 4px;
-    right: 6px;
-    min-width: 27px;
-    height: 20px;
-    padding: 0 4px;
-    border-radius: 999px;
-    font-size: .58rem;
-    line-height: 1;
-    pointer-events: none;
-  }
-  .screen--shopping-compact .shopping-item__compact-check {
-    display: inline;
-    margin-right: 2px;
-  }
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__check {
-    display: none;
-  }
-
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button {
-    z-index: 4;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 48px;
-    min-width: 48px;
-    height: 56px;
-    min-height: 56px;
-    padding: 0;
-    border: 0;
-    border-left: 1px solid rgba(134,239,172,.18);
-    border-radius: 0 9px 9px 0;
-    background: transparent;
-    color: transparent;
-    font-size: 0;
-  }
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button::after {
-    content: "Size";
-    position: absolute;
-    right: 4px;
-    bottom: 4px;
-    min-width: 35px;
-    min-height: 19px;
-    display: grid;
-    place-items: center;
-    padding: 1px 4px;
-    border: 1px solid #475569;
-    border-radius: 6px;
-    background: #172033;
-    color: #dbeafe;
-    font-size: .56rem;
-    font-weight: 800;
-    line-height: 1;
-  }
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button:hover {
-    background: rgba(255,255,255,.025);
-  }
-  .screen--shopping-compact .shopping-item--collected {
-    opacity: .58;
-  }
-  .screen--shopping-compact [data-shop-filter-empty] {
-    margin: 4px 2px;
-    font-size: .68rem;
-  }
+/* Preparation state: selected items expose Size beside their existing count. */
+.shopping-item-wrap--prepared .shopping-item--selected {
+  min-height: 64px;
+  padding-right: 100px;
+}
+.shopping-item-wrap--prepared .shopping-item__quantity {
+  top: 9px;
+  right: 11px;
+  transform: none;
+  min-width: 34px;
+  height: 26px;
+  font-size: .68rem;
+}
+.shopping-item-wrap--prepared .shopping-item__remove {
+  right: 58px;
+}
+.shopping-item-wrap--prepared .shopping-item__size-button--prepared {
+  top: auto;
+  right: 8px;
+  bottom: 6px;
+  width: 45px;
+  min-width: 45px;
+  min-height: 25px;
+  height: 25px;
+  padding: 2px 5px;
 }
 
-@media print {
-  .shopping-item__compact-check {
-    display: none !important;
-  }
+/* Locked: everything above the item grid is flattened, but controls stay touch-friendly. */
+.screen--shopping-locked-dense .app-bar {
+  min-height: 44px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 5px;
+  padding: 3px 5px;
+}
+.screen--shopping-locked-dense .app-bar .icon-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+.screen--shopping-locked-dense .app-bar__titles {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  overflow: hidden;
+}
+.screen--shopping-locked-dense .app-bar h1 {
+  min-width: 0;
+  margin: 0;
+  font-size: .98rem;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.screen--shopping-locked-dense .app-bar__subtitle {
+  margin: 0;
+  font-size: .58rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.screen--shopping-locked-dense .app-bar__actions {
+  display: none;
+}
+.screen--shopping-locked-dense .screen__content {
+  padding: 2px 3px 6px;
+}
+.screen--shopping-locked-dense .stack--lg {
+  gap: 2px;
+}
+.screen--shopping-locked-dense .shopping-list-header {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.screen--shopping-locked-dense .shopping-list-header > div:first-child {
+  display: none;
+}
+.screen--shopping-locked-dense .shopping-actions--locked {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) 40px !important;
+  gap: 2px;
+}
+.screen--shopping-locked-dense .shopping-actions--locked .button {
+  min-width: 0;
+  min-height: 40px;
+  height: 40px;
+  padding: 3px 4px;
+  border-radius: 6px;
+  font-size: .66rem;
+  line-height: 1;
+}
+.screen--shopping-locked-dense .shopping-search-toggle {
+  width: 40px !important;
+  padding: 0 !important;
+  font-size: 1.15rem !important;
+}
+.screen--shopping-locked-dense .list-filter-bar--locked-collapsed {
+  grid-template-columns: 1fr !important;
+  margin: 0;
+  padding: 2px;
+  gap: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.screen--shopping-locked-dense .list-filter-bar--locked-collapsed input {
+  min-height: 38px;
+  height: 38px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  font-size: .78rem;
+}
+.screen--shopping-locked-dense .list-filter-bar--locked-collapsed [data-shop-filter-count] {
+  display: none;
 }
 
-/* v2.6.1: zero-waste compact preview.
-   Each locked tile is a 48px split control:
-   left = collect/uncollect, right 44px = Size. */
-@media screen {
-  .screen--shopping-compact .app-bar {
-    min-height: 44px;
-    grid-template-columns: 34px minmax(0, 1fr) auto;
-    gap: 5px;
-    padding: 3px 5px;
-    border-bottom-color: rgba(148,163,184,.14);
+/* 3-column locked checklist. Entire tile is the collect/uncollect target. */
+.screen--shopping-locked-dense .shopping-category-list {
+  gap: 2px;
+}
+.screen--shopping-locked-dense .shopping-item-grid--locked-flat {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 2px !important;
+}
+.screen--shopping-locked-dense .shopping-item-wrap--locked {
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+}
+.screen--shopping-locked-dense .shopping-item-wrap--locked .shopping-item--locked {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  justify-content: center;
+  gap: 0;
+}
+.screen--shopping-locked-dense .shopping-item__name--locked {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .68rem;
+  line-height: 1;
+  font-weight: 820;
+}
+.screen--shopping-locked-dense .shopping-item--collected {
+  opacity: .52;
+}
+.screen--shopping-locked-dense .shopping-item--collected .shopping-item__name--locked {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.screen--shopping-locked-dense .shopping-item__quantity,
+.screen--shopping-locked-dense .shopping-item__size-label,
+.screen--shopping-locked-dense .shopping-item__size-button,
+.screen--shopping-locked-dense .shopping-item__check,
+.screen--shopping-locked-dense .shopping-item__compact-check {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .shopping-item-wrap--prepared .shopping-item--selected {
+    min-height: 58px;
+    padding-right: 92px;
   }
-  .screen--shopping-compact .app-bar .icon-button {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-  }
-  .screen--shopping-compact .app-bar__titles {
-    min-width: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 5px;
-    overflow: hidden;
-  }
-  .screen--shopping-compact .app-bar h1 {
-    flex: 0 1 auto;
-    min-width: 0;
-    margin: 0;
-    font-size: .98rem;
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .screen--shopping-compact .app-bar__subtitle {
-    flex: 0 0 auto;
-    margin: 0;
-    font-size: .58rem;
-    line-height: 1;
-    white-space: nowrap;
-  }
-  .screen--shopping-compact .shopping-layout-toggle {
-    min-height: 32px;
-    padding: 3px 7px;
-    border-radius: 7px;
+  .shopping-item-wrap--prepared .shopping-item__quantity {
+    top: 6px;
+    right: 7px;
+    min-width: 30px;
+    height: 23px;
     font-size: .62rem;
   }
-
-  .screen--shopping-compact .screen__content {
-    padding: 2px 4px 6px;
+  .shopping-item-wrap--prepared .shopping-item__remove {
+    right: 51px;
   }
-  .screen--shopping-compact .stack--lg {
-    gap: 2px;
-  }
-  .screen--shopping-compact .shopping-list-header {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-  .screen--shopping-compact .shopping-actions--locked {
-    width: 100%;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) 42px !important;
-    gap: 2px;
-  }
-  .screen--shopping-compact .shopping-actions--locked .button {
-    min-height: 42px;
-    height: 42px;
-    padding: 4px 4px;
-    border-radius: 7px;
-    font-size: .68rem;
-    line-height: 1;
-  }
-  .screen--shopping-compact .shopping-search-toggle {
-    width: 42px !important;
-    height: 42px !important;
-    min-height: 42px;
-  }
-
-  .screen--shopping-compact .list-filter-bar--compact {
-    margin: 0;
-    padding: 2px;
-    gap: 2px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-  .screen--shopping-compact .list-filter-bar--compact input {
-    min-height: 40px;
-    height: 40px;
-    padding: 5px 7px;
-    border-radius: 7px;
-    font-size: .78rem;
-  }
-
-  .screen--shopping-compact .shopping-category-list {
-    gap: 2px;
-  }
-  .screen--shopping-compact .shopping-item-grid--locked-flat {
-    gap: 2px;
-  }
-  .screen--shopping-compact .shopping-item-wrap--locked {
-    min-height: 48px;
-    height: 48px;
-  }
-
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item--locked {
-    min-height: 48px;
-    height: 48px;
-    padding: 3px 47px 3px 6px;
-    border-radius: 7px;
-    border-width: 1px;
-    gap: 0;
-  }
-  .screen--shopping-compact .shopping-item__name-row {
-    width: 100%;
-    min-width: 0;
-    display: grid;
-    align-content: center;
-    justify-items: start;
-    gap: 1px;
-  }
-  .screen--shopping-compact .shopping-item__name {
-    width: 100%;
-    max-width: 100%;
-    font-size: .72rem;
-    line-height: 1.04;
-    font-weight: 820;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-  .screen--shopping-compact .shopping-item__size-label {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    min-height: 0;
-    background: transparent;
-    color: #bfdbfe;
-    font-size: .55rem;
-    line-height: 1;
-    font-weight: 750;
-  }
-
-  /* The whole 44px rail is the Size button. The quantity sits inside it
-     as non-interactive status, so neither control consumes extra tile space. */
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button {
-    z-index: 4;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 44px;
-    min-width: 44px;
-    height: 48px;
-    min-height: 48px;
-    padding: 0;
-    border: 0;
-    border-left: 1px solid rgba(134,239,172,.22);
-    border-radius: 0 7px 7px 0;
-    background: rgba(15,23,42,.16);
-    color: transparent;
-    font-size: 0;
-  }
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button::after {
-    content: "Size";
-    position: absolute;
-    left: 0;
-    right: 0;
+  .shopping-item-wrap--prepared .shopping-item__size-button--prepared {
+    right: 5px;
     bottom: 4px;
-    min-width: 0;
-    min-height: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #dbeafe;
-    font-size: .55rem;
-    font-weight: 850;
-    line-height: 1;
-  }
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button:active {
-    background: rgba(96,165,250,.16);
-  }
-
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__quantity,
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item--collected .shopping-item__quantity {
-    z-index: 5;
-    top: 5px;
-    right: 0;
-    width: 44px;
-    min-width: 44px;
-    height: auto;
-    transform: none;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: #dcfce7;
+    width: 42px;
+    min-width: 42px;
+    min-height: 22px;
+    height: 22px;
     font-size: .58rem;
-    font-weight: 900;
-    line-height: 1;
-    pointer-events: none;
-  }
-  .screen--shopping-compact .shopping-item__compact-check {
-    margin-right: 2px;
-  }
-
-  .screen--shopping-compact .shopping-item--collected {
-    opacity: .55;
-  }
-  .screen--shopping-compact .shopping-item--collected .shopping-item__name {
-    text-decoration-thickness: 1px;
   }
 }
 
 @media print {
-  .screen--shopping-compact .shopping-item-wrap--locked,
-  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item--locked {
+  .screen--shopping-locked-dense .shopping-item-grid--locked-flat {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0 10mm !important;
+  }
+  .screen--shopping-locked-dense .shopping-item-wrap--locked,
+  .screen--shopping-locked-dense .shopping-item-wrap--locked .shopping-item--locked {
     height: auto !important;
     min-height: 10mm !important;
+  }
+  .screen--shopping-locked-dense .shopping-item__name--locked {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    font-size: 11pt !important;
+  }
+  .screen--shopping-locked-dense .shopping-item__print-meta {
+    display: block !important;
+    margin-left: auto;
+    color: #444 !important;
+    font-size: 9pt !important;
+    font-weight: 700;
   }
 }

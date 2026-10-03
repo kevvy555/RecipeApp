@@ -138,10 +138,9 @@ test('locked list quick add adds a missing item without unlocking the list', () 
   assert.equal(state.shops[0].current.quantities.milk, 1);
 });
 
-test('locked shopping item can store, change and clear a size without changing count', () => {
+test('prepared shopping item can store, change and clear a size without changing count', () => {
   let state = blank();
   state = incrementShoppingItem(state, 'shop', 'milk');
-  state = lockShoppingItems(state, 'shop');
   state = setShoppingItemSize(state, 'shop', 'milk', '2L');
   assert.equal(state.shops[0].current.sizes.milk, '2L');
   assert.equal(state.shops[0].current.quantities.milk, 1);
@@ -151,21 +150,21 @@ test('locked shopping item can store, change and clear a size without changing c
   assert.equal(state.shops[0].current.sizes.milk, undefined);
 });
 
-test('item size cannot be set until the item is selected and list is locked', () => {
+test('item size can be set once selected during preparation and survives locking', () => {
   let state = blank();
   state = setShoppingItemSize(state, 'shop', 'milk', '1L');
   assert.equal(state.shops[0].current.sizes.milk, undefined);
   state = incrementShoppingItem(state, 'shop', 'milk');
   state = setShoppingItemSize(state, 'shop', 'milk', '1L');
-  assert.equal(state.shops[0].current.sizes.milk, undefined);
+  assert.equal(state.shops[0].current.sizes.milk, '1L');
+  state = lockShoppingItems(state, 'shop');
+  assert.equal(state.shops[0].current.sizes.milk, '1L');
 });
 
 test('removing an unlocked item removes its saved size', () => {
   let state = blank();
   state = incrementShoppingItem(state, 'shop', 'milk');
-  state = lockShoppingItems(state, 'shop');
   state = setShoppingItemSize(state, 'shop', 'milk', '500ml');
-  state = unlockShoppingItems(state, 'shop');
   state = removeShoppingItem(state, 'shop', 'milk');
   assert.equal(state.shops[0].current.sizes.milk, undefined);
 });
@@ -189,9 +188,7 @@ test('remembered default size is restored when quick-adding to a locked list', (
 test('existing current size is not overwritten by a remembered default', () => {
   let state = blank();
   state = incrementShoppingItem(state, 'shop', 'milk');
-  state = lockShoppingItems(state, 'shop');
   state = setShoppingItemSize(state, 'shop', 'milk', '1L');
-  state = unlockShoppingItems(state, 'shop');
   state = incrementShoppingItem(state, 'shop', 'milk', '2L');
   assert.equal(state.shops[0].current.sizes.milk, '1L');
 });

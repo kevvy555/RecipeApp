@@ -12,18 +12,6 @@ function shopStatus(shop, items) {
   return `${shopItems(items, shop.id).length} available items`;
 }
 
-const COMPACT_LOCKED_LAYOUT_KEY = 'recipeApp.shopping.compactLockedLayout.v1';
-
-function compactLockedLayoutEnabled() {
-  try { return localStorage.getItem(COMPACT_LOCKED_LAYOUT_KEY) === '1'; }
-  catch { return false; }
-}
-
-function setCompactLockedLayout(enabled) {
-  try { localStorage.setItem(COMPACT_LOCKED_LAYOUT_KEY, enabled ? '1' : '0'); }
-  catch {}
-}
-
 function categoryOptions(items) {
   const categories = [...new Set(items.map(item => item.category).filter(Boolean))].sort();
   return `<option value="">All categories</option>${categories.map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}`;
@@ -47,7 +35,6 @@ export class ShoppingView {
     const locked = Boolean(shop.current?.locked);
     const items = locked ? selectedShopItems(shop, this.context.state.items) : rankedShopItems(shop, this.context.state.items);
     const selected = selectedItemCount(shop);
-    const compactPreview = locked && compactLockedLayoutEnabled();
 
     const renderItemCard = (item, category = item.category || 'Other') => {
       const quantity = Number(shop.current?.quantities?.[item.id] || 0);
@@ -58,11 +45,17 @@ export class ShoppingView {
       const classes = ['shopping-item', quantity > 0 ? 'shopping-item--selected' : '', locked ? 'shopping-item--locked' : '', collected ? 'shopping-item--collected' : '', removable ? 'shopping-item--removable' : '', hideable ? 'shopping-item--hideable' : ''].filter(Boolean).join(' ');
       const action = locked ? 'data-toggle-collected-shopping-item' : 'data-increment-shopping-item';
       const searchText = `${item.name} ${category} ${item.notes || ''}`.toLowerCase();
-      const main = `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name-row"><span class="shopping-item__name">${escapeHtml(item.name)}</span>${size ? `<span class="shopping-item__size-label">${escapeHtml(size)}</span>` : ''}</span>${quantity > 0 ? `<span class="shopping-item__quantity">${collected ? '<span class="shopping-item__compact-check">✓</span>' : ''}${quantity}×</span>` : ''}${collected ? '<span class="shopping-item__check">✓</span>' : ''}</button>`;
-      const sizeButton = locked ? `<button class="shopping-item__size-button" type="button" data-shopping-item-size="${escapeHtml(item.id)}" aria-label="Set size for ${escapeHtml(item.name)}">${compactPreview ? 'Size' : (size ? 'Size' : '+ Size')}</button>` : '';
+
+      const main = locked
+        ? `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}" title="${escapeHtml(item.name)}"><span class="shopping-item__name shopping-item__name--locked">${escapeHtml(item.name)}</span><span class="shopping-item__print-meta">${quantity > 1 ? `${quantity}×` : ''}${quantity > 1 && size ? ' · ' : ''}${size ? escapeHtml(size) : ''}</span></button>`
+        : `<button class="${classes}" type="button" ${action}="${escapeHtml(item.id)}"><span class="shopping-item__name-row"><span class="shopping-item__name">${escapeHtml(item.name)}</span>${size ? `<span class="shopping-item__size-label">${escapeHtml(size)}</span>` : ''}</span>${quantity > 0 ? `<span class="shopping-item__quantity">${quantity}×</span>` : ''}</button>`;
+
+      const sizeButton = !locked && quantity > 0
+        ? `<button class="shopping-item__size-button shopping-item__size-button--prepared" type="button" data-shopping-item-size="${escapeHtml(item.id)}" aria-label="Set size for ${escapeHtml(item.name)}">${size ? 'Size' : '+ Size'}</button>`
+        : '';
       const remove = removable ? `<button class="shopping-item__remove" type="button" data-remove-shopping-item="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from this shopping trip">✕</button>` : '';
       const hide = hideable ? `<button class="shopping-item__hide" type="button" data-hide-shopping-option="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from this shop's options">✕</button>` : '';
-      return `<div class="shopping-item-wrap ${locked ? 'shopping-item-wrap--locked' : ''}" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(category)}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${sizeButton}${remove}${hide}</div>`;
+      return `<div class="shopping-item-wrap ${locked ? 'shopping-item-wrap--locked' : ''} ${!locked && quantity > 0 ? 'shopping-item-wrap--prepared' : ''}" data-shop-item-row data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(category)}" data-selection="${quantity > 0 ? 'selected' : 'unselected'}">${main}${sizeButton}${remove}${hide}</div>`;
     };
 
     const categoryGroups = groupItemsByCategory(items);
@@ -83,36 +76,31 @@ export class ShoppingView {
       : categorySections;
 
     const actions = locked
-      ? `<div class="shopping-actions shopping-actions--locked"><button class="button button--ghost" type="button" data-add-locked-shopping-item>+ Add</button><button class="button button--ghost" type="button" data-print-shopping-list>Print</button><button class="button button--ghost" type="button" data-edit-shopping-list>Edit</button><button class="button button--primary shopping-action" type="button" data-complete-shopping-shop>Done</button>${compactPreview ? '<button class="button button--ghost shopping-search-toggle" type="button" data-toggle-compact-search aria-label="Search shopping list" aria-expanded="false">⌕</button>' : ''}</div>`
+      ? '<div class="shopping-actions shopping-actions--locked"><button class="button button--ghost" type="button" data-add-locked-shopping-item>+ Add</button><button class="button button--ghost" type="button" data-print-shopping-list>Print</button><button class="button button--ghost" type="button" data-edit-shopping-list>Edit</button><button class="button button--primary shopping-action" type="button" data-complete-shopping-shop>Done</button><button class="button button--ghost shopping-search-toggle" type="button" data-toggle-locked-search aria-label="Search shopping list" aria-expanded="false">⌕</button></div>'
       : `<div class="shopping-actions shopping-actions--wrap"><button class="button button--ghost" type="button" data-add-shopping-item>+ Groceries</button><button class="button button--ghost" type="button" data-manage-shopping-items>Manage</button><button class="button button--ghost" type="button" data-clear-shopping-selection ${selected === 0 ? 'disabled' : ''}>Clear</button><button class="button button--primary shopping-action" type="button" data-lock-shopping-items ${selected === 0 ? 'disabled' : ''}>Lock</button></div>`;
 
     const help = locked
       ? 'Tap an item as you collect it. Use Edit List if you need to add, remove or change items, then lock it again.'
       : 'Tap an item once for 1×. Each extra tap increases the quantity. Search and filters update the list immediately.';
 
-    const filters = items.length ? `<section class="card list-filter-bar ${locked ? 'list-filter-bar--locked' : ''} ${compactPreview ? 'list-filter-bar--compact' : ''}" ${compactPreview ? 'hidden' : ''}>
+    const filters = items.length ? `<section class="card list-filter-bar ${locked ? 'list-filter-bar--locked list-filter-bar--locked-collapsed' : ''}" ${locked ? 'hidden' : ''}>
       <input data-shop-list-search type="search" placeholder="${locked ? 'Search items to buy…' : 'Search this shop…'}" aria-label="Search shop items">
       ${locked ? '' : `<select data-shop-list-category aria-label="Filter shop items by category">${categoryOptions(items)}</select><select data-shop-list-selection aria-label="Filter selected items"><option value="">All items</option><option value="selected">Selected</option><option value="unselected">Not selected</option></select>`}
       <span class="muted small" data-shop-filter-count></span>
     </section>` : '';
 
-    const layoutToggle = locked ? `<button class="button button--ghost shopping-layout-toggle" type="button" data-toggle-locked-layout title="Toggle alternative compact locked-list layout">${compactPreview ? 'Standard' : 'Alt Layout'}</button>` : '';
-    const appBarActions = compactPreview
-      ? layoutToggle
-      : `<button class="button button--ghost" type="button" data-global-action="import">Import</button><button class="button button--ghost" type="button" data-global-action="export">Export</button>${layoutToggle}`;
+    const appBarActions = locked
+      ? ''
+      : '<button class="button button--ghost" type="button" data-global-action="import">Import</button><button class="button button--ghost" type="button" data-global-action="export">Export</button>';
 
-    this.root.innerHTML = `<section class="screen screen--section screen--shopping ${compactPreview ? 'screen--shopping-compact' : ''}"><header class="app-bar"><button class="icon-button" type="button" data-shopping-back>←</button><div class="app-bar__titles"><h1>${escapeHtml(shop.name)}</h1><p class="app-bar__subtitle">${locked ? `${selected} locked item${selected === 1 ? '' : 's'}` : `${shopItems(this.context.state.items, shop.id).length} available items`}</p></div><div class="app-bar__actions">${appBarActions}</div></header><div class="screen__content"><div class="stack stack--lg"><section class="card shopping-list-header"><div><p class="eyebrow">${locked ? 'Locked shopping list' : 'Build shopping list'}</p><h2>${locked ? 'Collect your items' : 'Tap what you need'}</h2><p class="muted">${escapeHtml(help)}</p></div>${actions}</section>${filters}<div class="shopping-print-heading" aria-hidden="true"><h1>${escapeHtml(shop.name)}</h1><p>${selected} item${selected === 1 ? '' : 's'}</p></div><div class="shopping-category-list">${shoppingItemsMarkup || '<div class="empty-state"><h3>No available items</h3><p>Add an existing item from Groceries or restore one in Manage Items.</p></div>'}</div><p class="muted" data-shop-filter-empty hidden>No items match those filters.</p></div></div></section>`;
+    this.root.innerHTML = `<section class="screen screen--section screen--shopping ${locked ? 'screen--shopping-locked-dense' : ''}"><header class="app-bar"><button class="icon-button" type="button" data-shopping-back>←</button><div class="app-bar__titles"><h1>${escapeHtml(shop.name)}</h1><p class="app-bar__subtitle">${locked ? `${selected} locked item${selected === 1 ? '' : 's'}` : `${shopItems(this.context.state.items, shop.id).length} available items`}</p></div><div class="app-bar__actions">${appBarActions}</div></header><div class="screen__content"><div class="stack stack--lg"><section class="card shopping-list-header"><div><p class="eyebrow">${locked ? 'Locked shopping list' : 'Build shopping list'}</p><h2>${locked ? 'Collect your items' : 'Tap what you need'}</h2><p class="muted">${escapeHtml(help)}</p></div>${actions}</section>${filters}<div class="shopping-print-heading" aria-hidden="true"><h1>${escapeHtml(shop.name)}</h1><p>${selected} item${selected === 1 ? '' : 's'}</p></div><div class="shopping-category-list">${shoppingItemsMarkup || '<div class="empty-state"><h3>No available items</h3><p>Add an existing item from Groceries or restore one in Manage Items.</p></div>'}</div><p class="muted" data-shop-filter-empty hidden>No items match those filters.</p></div></div></section>`;
     this.bindShop(shopId, locked);
   }
 
   bindShop(shopId, locked) {
     this.root.querySelector('[data-shopping-back]')?.addEventListener('click', () => this.context.actions.closeShoppingShop());
-    this.root.querySelector('[data-toggle-locked-layout]')?.addEventListener('click', () => {
-      setCompactLockedLayout(!compactLockedLayoutEnabled());
-      this.renderShop(shopId);
-    });
-    this.root.querySelector('[data-toggle-compact-search]')?.addEventListener('click', event => {
-      const filterBar = this.root.querySelector('.list-filter-bar--compact');
+    this.root.querySelector('[data-toggle-locked-search]')?.addEventListener('click', event => {
+      const filterBar = this.root.querySelector('.list-filter-bar--locked-collapsed');
       if (!filterBar) return;
       const opening = filterBar.hidden;
       filterBar.hidden = !opening;
@@ -182,7 +170,7 @@ export class ShoppingView {
   openItemSize(shopId, itemId) {
     const shop = this.context.state.shopping.shops.find(entry => entry.id === shopId);
     const item = this.context.state.items.find(entry => entry.id === itemId);
-    if (!shop || !item || !shop.current?.locked) return;
+    if (!shop || !item || shop.current?.locked || Number(shop.current?.quantities?.[itemId] || 0) <= 0) return;
 
     const current = String(shop.current?.sizes?.[itemId] || '');
     const volumeSizes = ['250ml', '330ml', '500ml', '750ml', '1L', '1.5L', '2L'];
