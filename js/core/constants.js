@@ -1,4 +1,4 @@
-export const APP_VERSION = '2.5.1';
+export const APP_VERSION = '2.6.0';
 export const DATA_SCHEMA_VERSION = 2;
 export const CATALOG_REVISION = 3;
 
