@@ -1002,3 +1002,226 @@
     display: none !important;
   }
 }
+
+/* v2.6.1: zero-waste compact preview.
+   Each locked tile is a 48px split control:
+   left = collect/uncollect, right 44px = Size. */
+@media screen {
+  .screen--shopping-compact .app-bar {
+    min-height: 44px;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 5px;
+    padding: 3px 5px;
+    border-bottom-color: rgba(148,163,184,.14);
+  }
+  .screen--shopping-compact .app-bar .icon-button {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+  .screen--shopping-compact .app-bar__titles {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    overflow: hidden;
+  }
+  .screen--shopping-compact .app-bar h1 {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: .98rem;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .screen--shopping-compact .app-bar__subtitle {
+    flex: 0 0 auto;
+    margin: 0;
+    font-size: .58rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .screen--shopping-compact .shopping-layout-toggle {
+    min-height: 32px;
+    padding: 3px 7px;
+    border-radius: 7px;
+    font-size: .62rem;
+  }
+
+  .screen--shopping-compact .screen__content {
+    padding: 2px 4px 6px;
+  }
+  .screen--shopping-compact .stack--lg {
+    gap: 2px;
+  }
+  .screen--shopping-compact .shopping-list-header {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .screen--shopping-compact .shopping-actions--locked {
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) 42px !important;
+    gap: 2px;
+  }
+  .screen--shopping-compact .shopping-actions--locked .button {
+    min-height: 42px;
+    height: 42px;
+    padding: 4px 4px;
+    border-radius: 7px;
+    font-size: .68rem;
+    line-height: 1;
+  }
+  .screen--shopping-compact .shopping-search-toggle {
+    width: 42px !important;
+    height: 42px !important;
+    min-height: 42px;
+  }
+
+  .screen--shopping-compact .list-filter-bar--compact {
+    margin: 0;
+    padding: 2px;
+    gap: 2px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .screen--shopping-compact .list-filter-bar--compact input {
+    min-height: 40px;
+    height: 40px;
+    padding: 5px 7px;
+    border-radius: 7px;
+    font-size: .78rem;
+  }
+
+  .screen--shopping-compact .shopping-category-list {
+    gap: 2px;
+  }
+  .screen--shopping-compact .shopping-item-grid--locked-flat {
+    gap: 2px;
+  }
+  .screen--shopping-compact .shopping-item-wrap--locked {
+    min-height: 48px;
+    height: 48px;
+  }
+
+  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item--locked {
+    min-height: 48px;
+    height: 48px;
+    padding: 3px 47px 3px 6px;
+    border-radius: 7px;
+    border-width: 1px;
+    gap: 0;
+  }
+  .screen--shopping-compact .shopping-item__name-row {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 1px;
+  }
+  .screen--shopping-compact .shopping-item__name {
+    width: 100%;
+    max-width: 100%;
+    font-size: .72rem;
+    line-height: 1.04;
+    font-weight: 820;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .screen--shopping-compact .shopping-item__size-label {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-height: 0;
+    background: transparent;
+    color: #bfdbfe;
+    font-size: .55rem;
+    line-height: 1;
+    font-weight: 750;
+  }
+
+  /* The whole 44px rail is the Size button. The quantity sits inside it
+     as non-interactive status, so neither control consumes extra tile space. */
+  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button {
+    z-index: 4;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 44px;
+    min-width: 44px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
+    border: 0;
+    border-left: 1px solid rgba(134,239,172,.22);
+    border-radius: 0 7px 7px 0;
+    background: rgba(15,23,42,.16);
+    color: transparent;
+    font-size: 0;
+  }
+  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button::after {
+    content: "Size";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 4px;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #dbeafe;
+    font-size: .55rem;
+    font-weight: 850;
+    line-height: 1;
+  }
+  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__size-button:active {
+    background: rgba(96,165,250,.16);
+  }
+
+  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item__quantity,
+  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item--collected .shopping-item__quantity {
+    z-index: 5;
+    top: 5px;
+    right: 0;
+    width: 44px;
+    min-width: 44px;
+    height: auto;
+    transform: none;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #dcfce7;
+    font-size: .58rem;
+    font-weight: 900;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .screen--shopping-compact .shopping-item__compact-check {
+    margin-right: 2px;
+  }
+
+  .screen--shopping-compact .shopping-item--collected {
+    opacity: .55;
+  }
+  .screen--shopping-compact .shopping-item--collected .shopping-item__name {
+    text-decoration-thickness: 1px;
+  }
+}
+
+@media print {
+  .screen--shopping-compact .shopping-item-wrap--locked,
+  .screen--shopping-compact .shopping-item-wrap--locked .shopping-item--locked {
+    height: auto !important;
+    min-height: 10mm !important;
+  }
+}

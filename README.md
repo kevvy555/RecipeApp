@@ -2,7 +2,7 @@
 
 A lightweight, local-first groceries, recipe, weekly meal planning and shopping-list web app. It uses plain HTML/CSS/JavaScript, ES modules, separate domain/persistence/UI concerns and JSON seed data, with no framework or build dependency.
 
-## Version 2.6.0 features
+## Version 2.6.1 features
 
 - **Home** — Groceries, Recipes, Planner and Shopping.
 - **Groceries** — the single master catalogue for everything you buy, including food and non-food items, with live partial-match search and category/type/preferred-shop filters.
@@ -78,3 +78,5 @@ The project is static and can be published directly from the repository root usi
 Locked shopping items can store an optional size such as `500g`, `2L`, `6 pack` or any custom text. Presets save immediately; custom sizes use the Add button. The last chosen size is remembered on the Grocery item and automatically restored when that item is added to a future shopping list. Size is shown beneath the item name and included on printed lists.
 
 The compact locked-list preview is a device-local UI preference. It hides low-value Import/Export controls while shopping, collapses search behind a button, and uses 56px ticket-style rows with a full-height right-hand Size touch rail. Standard layout remains available unchanged.
+
+Compact Preview v2 uses a zero-waste 48px split-row layout: the entire left side is the collect target and the entire 44px right rail is the Size target, with quantity status drawn inside that rail. Compact header/action wrappers are flattened to remove decorative padding while preserving finger-sized controls.
